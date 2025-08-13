@@ -1,7 +1,13 @@
-import React from 'react'
+import React from "react";
+import { Navbar } from "../components/Navbar";
+import { Footer } from "../components/Footer";
 
 export const Home = () => {
   return (
-    <div>Home</div>
-  )
-}
+    <div className="flex flex-col">
+      <Navbar />
+      <div className="">This is boady</div>
+      <Footer/>
+    </div>
+  );
+};
