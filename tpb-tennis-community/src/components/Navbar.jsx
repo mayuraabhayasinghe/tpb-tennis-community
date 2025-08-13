@@ -9,10 +9,10 @@ export const Navbar = () => {
     setIsOpen(!isOpen);
   };
   return (
-    <nav className="relative">
+    <nav className="fixed top-0 left-0 right-0 z-50">
       <div className="w-full px-3.5 lg:px-5 py-1.5 md:py-3 flex items-center justify-between bg-white/10 backdrop-blur-md border-b border-white/20 ">
         <div className="flex items-center gap-1.5">
-          <div className="text-white text-sm lg:text-lg font-bold px-2.5 py-1 rounded-sm bg-gradient-to-tr from-black via-gray-600 to-black shadow-sm ">
+          <div className="text-yellow-300 text-sm lg:text-lg font-bold px-2.5 py-1 rounded-sm bg-gradient-to-tr from-black via-gray-600 to-black shadow-sm ">
             TPB
           </div>
           <span className="font-sans font-medium text-sm lg:text-lg">
@@ -39,15 +39,15 @@ export const Navbar = () => {
         <div className="hidden md:flex md:display items-center gap-2">
           <Button className="rounded-xl px-6" variant="ghost" asChild>
             <Link className="text-sm lg:text-[15px]" to="/login">
-              Login
+              Log in
             </Link>
           </Button>
           <Button
-            className="rounded-xl bg-blue-700 hover:bg-blue-800 text-white"
+            className="rounded-xl bg-green-600 hover:bg-green-700 text-white"
             asChild
           >
-            <Link className="text-sm lg:text-[15px]" to="/register">
-              Register
+            <Link className="text-sm lg:text-[15px]" to="/sign-up">
+              Sign up
             </Link>
           </Button>
         </div>
