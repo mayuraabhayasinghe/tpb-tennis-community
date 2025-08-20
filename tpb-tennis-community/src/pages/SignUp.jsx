@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Navbar } from "../components/Navbar";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "../services/createClient";
 
 const MailIcon = () => (
   <svg
@@ -99,18 +100,46 @@ const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [checkboxClick, setCheckbokClick] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [checked, setChecked] = useState(false);
+  const [validation, setValidation] = useState(false);
+
+  const navigate = useNavigate();
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
   const handleCheckClick = () => {
-    setCheckbokClick(!checkboxClick);
+    setChecked(!checked);
   };
+
+  const handleSignUpWithEmail = async function () {
+    const { error } = await supabase.auth.signUp({ email, password });
+    if (error) {
+      setErrorMessage(error.message);
+      console.log(error.message);
+      return;
+    }
+    // navigate('/');
+  };
+
+  useEffect(() => {
+    const handleValidation = () => {
+      if (email && password && checked) {
+        setValidation(true);
+        console.log(validation);
+      } else {
+        setValidation(false);
+      }
+    };
+
+    handleValidation();
+  }, [email, password, checked]);
   return (
     <>
       <Navbar />
-      <div className="mt-16 flex items-center justify-center p-4">
+      <div className="mt-20 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           {}
           <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-lg p-8 shadow-sm">
@@ -169,7 +198,7 @@ const SignUp = () => {
                     onClick={togglePasswordVisibility}
                     className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                   >
-                    {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                    {showPassword ? <EyeIcon /> : <EyeOffIcon />}
                   </button>
                 </div>
               </div>
@@ -206,7 +235,8 @@ const SignUp = () => {
               {}
               <button
                 type="submit"
-                disabled={!checkboxClick}
+                disabled={!validation}
+                onSubmit={handleSignUpWithEmail}
                 className=" inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white dark:ring-offset-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-green-600 text-white hover:bg-green-700 h-10 px-4 py-2 w-full"
               >
                 Create account
