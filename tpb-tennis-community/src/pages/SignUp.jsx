@@ -114,15 +114,44 @@ const SignUp = () => {
     setChecked(!checked);
   };
 
+  const updateProfileCompletionState = async (id) => {
+    const { data: profileData, error } = await supabase
+      .from("profiles")
+      .insert({ id: id })
+      .select();
+    if (error) {
+      console.log(error);
+      return;
+    }
+    console.log(profileData);
+  };
+
+  //function to sign up with email and password
   const handleSignUpWithEmail = async function () {
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) {
       setErrorMessage(error.message);
       console.log(error.message);
       return;
+    } else {
+      //get userId of auth.users table
+      const userId = data.session?.user?.id;
+      if (!userId) {
+        console.log("User id is undefined.");
+        navigate("/login");
+        return;
+      } else {
+        //Insert userId as id in profiles table.
+        //The default value of isProfileComplete is false.
+        updateProfileCompletionState(userId);
+      }
     }
-    // navigate('/');
+    navigate("/create-profile");
+    return;
   };
+
+  //The function to sign up with Google OAuth
+  const handleSignUpWithGoogle = async () => {};
 
   useEffect(() => {
     const handleValidation = () => {
