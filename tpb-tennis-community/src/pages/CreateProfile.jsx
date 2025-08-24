@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useContext, useRef, useCallback } from "react";
 import ReactCrop, { centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import { Navbar } from "../components/Navbar";
@@ -11,13 +11,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { authContext } from "../context/AuthContext";
+import { supabase } from "../services/createClient";
 
 const CreateProfile = ({ onImageUpload, className = "" }) => {
+  //Getting user's id to put into profile table's id column
+  // const { user } = useContext(authContext);
+  // const userId = user.id;
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [profession, setProfession] = useState("");
   const [contactNo, setContactNo] = useState("");
   const [city, setCity] = useState("");
+  const [skillLevel, setSkillLevel] = useState(0);
+
+  // Form validation states
+  const [errors, setErrors] = useState({
+    firstName: "",
+    lastName: "",
+    contactNo: "",
+  });
+  const [isFormValid, setIsFormValid] = useState(false);
+
   // for upload image
   const [imgSrc, setImgSrc] = useState("");
   const [crop, setCrop] = useState();
@@ -26,7 +42,8 @@ const CreateProfile = ({ onImageUpload, className = "" }) => {
   const imgRef = useRef(null);
   const previewCanvasRef = useRef(null);
 
-  //functions for image upload
+  /* Start of functions for image upload */
+
   // Function to handle file selection
   const onSelectFile = (e) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -60,69 +77,264 @@ const CreateProfile = ({ onImageUpload, className = "" }) => {
     setCrop(crop);
   }, []);
 
-  // Function to generate the cropped image
+  // Function to generate the cropped image and return a Promise with the URL
   const generateCroppedImage = () => {
-    if (!completedCrop || !imgRef.current || !previewCanvasRef.current) {
-      return;
-    }
+    return new Promise((resolve, reject) => {
+      if (!completedCrop || !imgRef.current || !previewCanvasRef.current) {
+        reject("Missing required elements for cropping");
+        return;
+      }
 
-    const image = imgRef.current;
-    const canvas = previewCanvasRef.current;
-    const crop = completedCrop;
+      const image = imgRef.current;
+      const canvas = previewCanvasRef.current;
+      const crop = completedCrop;
 
-    const scaleX = image.naturalWidth / image.width;
-    const scaleY = image.naturalHeight / image.height;
-    const ctx = canvas.getContext("2d");
+      const scaleX = image.naturalWidth / image.width;
+      const scaleY = image.naturalHeight / image.height;
+      const ctx = canvas.getContext("2d");
 
-    const pixelRatio = window.devicePixelRatio;
+      const pixelRatio = window.devicePixelRatio;
 
-    canvas.width = crop.width * pixelRatio;
-    canvas.height = crop.height * pixelRatio;
+      canvas.width = crop.width * pixelRatio;
+      canvas.height = crop.height * pixelRatio;
 
-    ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-    ctx.imageSmoothingQuality = "high";
+      ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      ctx.imageSmoothingQuality = "high";
 
-    ctx.drawImage(
-      image,
-      crop.x * scaleX,
-      crop.y * scaleY,
-      crop.width * scaleX,
-      crop.height * scaleY,
-      0,
-      0,
-      crop.width,
-      crop.height
-    );
+      ctx.drawImage(
+        image,
+        crop.x * scaleX,
+        crop.y * scaleY,
+        crop.width * scaleX,
+        crop.height * scaleY,
+        0,
+        0,
+        crop.width,
+        crop.height
+      );
 
-    // Convert canvas to blob then to URL
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) {
-          console.error("Canvas is empty");
-          return;
-        }
+      // Convert canvas to blob then to URL
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            console.error("Canvas is empty");
+            reject("Canvas is empty");
+            return;
+          }
 
-        const croppedImageUrl = URL.createObjectURL(blob);
-        setCroppedImage(croppedImageUrl);
+          const croppedImageUrl = URL.createObjectURL(blob);
+          setCroppedImage(croppedImageUrl);
 
-        // Call the callback function if provided
-        if (onImageUpload) {
-          onImageUpload(croppedImageUrl);
-        }
-      },
-      "image/jpeg",
-      0.95
-    );
+          // Log the cropped image URL to see its value
+          console.log("Cropped image URL:", croppedImageUrl);
+
+          // Call the callback function if provided
+          if (onImageUpload) {
+            onImageUpload(croppedImageUrl);
+          }
+
+          resolve(croppedImageUrl);
+        },
+        "image/jpeg",
+        0.95
+      );
+    });
   };
 
   // Function to handle the save button
-  const handleSaveClick = () => {
-    generateCroppedImage();
-    // Hide the cropping canvas after applying the crop
-    setImgSrc("");
-  };
-  //
+  const handleSaveClick = async () => {
+    try {
+      // Generate the cropped image and wait for it to complete
+      const newCroppedImage = await generateCroppedImage();
 
+      // Log the newly created cropped image URL
+      console.log("Final croppedImage value:", newCroppedImage);
+
+      // Hide the cropping canvas after applying the crop
+      setImgSrc("");
+    } catch (error) {
+      console.error("Error during image cropping:", error);
+    }
+  };
+
+  /* End of functions for image upload */
+
+  /* ---------------- */
+
+  /*
+  Start of the functions for form validation
+  */
+
+  // Validate form fields
+  const validateField = (name, value) => {
+    let error = "";
+
+    switch (name) {
+      case "firstName":
+        if (!value.trim()) {
+          error = "First name is required";
+        }
+        break;
+      case "lastName":
+        if (!value.trim()) {
+          error = "Last name is required";
+        }
+        break;
+      case "contactNo":
+        if (!value.trim()) {
+          error = "Contact number is required";
+        } else if (!/^[0-9]{3}-[0-9]{3}-[0-9]{4}$|^[0-9]{10}$/.test(value)) {
+          error =
+            "Please enter a valid contact number (10 digits or format 071-234-5678)";
+        }
+        break;
+      default:
+        break;
+    }
+
+    return error;
+  };
+
+  // Update validation whenever form fields change
+  const validateForm = () => {
+    const firstNameError = validateField("firstName", firstName);
+    const lastNameError = validateField("lastName", lastName);
+    const contactNoError = validateField("contactNo", contactNo);
+
+    setErrors({
+      firstName: firstNameError,
+      lastName: lastNameError,
+      contactNo: contactNoError,
+    });
+
+    // Form is valid if there are no errors
+    return !firstNameError && !lastNameError && !contactNoError;
+  };
+
+  // Handle input field changes with validation
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+
+    // Update the state based on input name
+    switch (name) {
+      case "firstName":
+        setFirstName(value);
+        break;
+      case "lastName":
+        setLastName(value);
+        break;
+      case "contactNo":
+        setContactNo(value);
+        break;
+      case "profession":
+        setProfession(value);
+        break;
+      case "city":
+        setCity(value);
+        break;
+      default:
+        break;
+    }
+
+    // Validate the changed field
+    const fieldError = validateField(name, value);
+    setErrors((prev) => ({
+      ...prev,
+      [name]: fieldError,
+    }));
+  };
+
+  // Check form validity whenever relevant fields change
+  React.useEffect(() => {
+    const isValid = validateForm();
+    setIsFormValid(isValid);
+  }, [firstName, lastName, contactNo]);
+
+  /*
+  End of the functions for form validation
+  */
+
+  /* ---------------- */
+
+  /*
+  Start of the functions for converting blob to jpeg file, uploading to the bucket
+  */
+
+  //convert croppedImage's value(Blob URL) to a file
+  const convertBlopUrlToFile = async (blobUrl, fileName = "profile.jpg") => {
+    //Fetch blob data from the URL
+    const response = await fetch(blobUrl);
+    const blob = await response.blob();
+
+    //Create a File object from the blob
+    const file = new File([blob], fileName, { type: blob.type });
+    return file;
+  };
+
+  //Function to upload profile picture to the subabase storage
+  const uploadProfilePic = async (userId, file) => {
+    const { data, error } = await supabase.storage
+      .from("avatar")
+      .upload(`${userId}.jpg`, file, { cacheControl: "3600", upsert: true });
+
+    if (error) {
+      console.log("Profile picture upload error: ", error);
+      return null;
+    }
+
+    return data.path;
+  };
+
+  /*
+  End of the functions for converting blob to jpeg file, uploading to the bucket
+  */
+
+  /* ---------------- */
+
+  const handleSubmission = async (e) => {
+    e.preventDefault();
+
+    // Validate all fields before submission
+    const isValid = validateForm();
+    if (!isValid) {
+      return; // Stop submission if form is not valid
+    }
+
+    //convert the croppedImage(Blob URL) to JPEG file called avatarFile
+    if (croppedImage) {
+      const avatarFile = await convertBlopUrlToFile(croppedImage);
+      const avatarPath = await uploadProfilePic(userId, avatarFile);
+    }
+
+    //update the row where id equals to userId
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        avatar_path: avatarPath || null,
+        first_name: firstName,
+        last_name: lastName,
+        profession: profession || null,
+        contact_no: contactNo,
+        city: city || null,
+        skill_level: skillLevel,
+        isProfileComplete: true,
+      })
+      .eq("id", userId);
+
+    if (error) {
+      console.log(error.message);
+      alert("Failed to create your profile. Try again!");
+      return;
+    }
+
+    setFirstName("");
+    setLastName("");
+    setProfession("");
+    setContactNo("");
+    setCity("");
+
+    alert("Profile created successfully!");
+  };
   return (
     <>
       <Navbar />
@@ -270,31 +482,61 @@ const CreateProfile = ({ onImageUpload, className = "" }) => {
               </div>
 
               {/* right part of profile form */}
-              <form className="space-y-4">
+              <form className="space-y-4" onSubmit={handleSubmission}>
                 {}
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                    First Name
+                    First Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
+                    name="firstName"
                     value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    onChange={handleInputChange}
+                    onBlur={() => validateField("firstName", firstName)}
                     placeholder="Ex: Jhone"
-                    className="signin-input w-full px-3 py-2 bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-md text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all duration-200"
+                    className={`signin-input w-full px-3 py-2 bg-white dark:bg-black border ${
+                      errors.firstName
+                        ? "border-red-500"
+                        : "border-gray-200 dark:border-gray-800"
+                    } rounded-md text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 ${
+                      errors.firstName
+                        ? "focus:ring-red-500"
+                        : "focus:ring-gray-900 dark:focus:ring-gray-100"
+                    } focus:border-transparent transition-all duration-200`}
                   />
+                  {errors.firstName && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.firstName}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                    Last Name
+                    Last Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
+                    name="lastName"
                     value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
+                    onChange={handleInputChange}
+                    onBlur={() => validateField("lastName", lastName)}
                     placeholder="Ex: Doe"
-                    className="signin-input w-full px-3 py-2 bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-md text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all duration-200"
+                    className={`signin-input w-full px-3 py-2 bg-white dark:bg-black border ${
+                      errors.lastName
+                        ? "border-red-500"
+                        : "border-gray-200 dark:border-gray-800"
+                    } rounded-md text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 ${
+                      errors.lastName
+                        ? "focus:ring-red-500"
+                        : "focus:ring-gray-900 dark:focus:ring-gray-100"
+                    } focus:border-transparent transition-all duration-200`}
                   />
+                  {errors.lastName && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.lastName}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -302,23 +544,39 @@ const CreateProfile = ({ onImageUpload, className = "" }) => {
                   </label>
                   <input
                     type="text"
+                    name="profession"
                     value={profession}
-                    onChange={(e) => setProfession(e.target.value)}
+                    onChange={handleInputChange}
                     placeholder="Ex: Freelancer"
                     className="signin-input w-full px-3 py-2 bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-md text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all duration-200"
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                    Contact Number
+                    Contact Number <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
+                    name="contactNo"
                     value={contactNo}
-                    onChange={(e) => setContactNo(e.target.value)}
+                    onChange={handleInputChange}
+                    onBlur={() => validateField("contactNo", contactNo)}
                     placeholder="Ex: 071-XXX-XXXX"
-                    className="signin-input w-full px-3 py-2 bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-md text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all duration-200"
+                    className={`signin-input w-full px-3 py-2 bg-white dark:bg-black border ${
+                      errors.contactNo
+                        ? "border-red-500"
+                        : "border-gray-200 dark:border-gray-800"
+                    } rounded-md text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 ${
+                      errors.contactNo
+                        ? "focus:ring-red-500"
+                        : "focus:ring-gray-900 dark:focus:ring-gray-100"
+                    } focus:border-transparent transition-all duration-200`}
                   />
+                  {errors.contactNo && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.contactNo}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -340,7 +598,10 @@ const CreateProfile = ({ onImageUpload, className = "" }) => {
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="0" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent
+                      value={skillLevel}
+                      onChange={(e) => setSkillLevel(Number(e.target.value))}
+                    >
                       <SelectItem value="0">0</SelectItem>
                       <SelectItem value="1">1</SelectItem>
                       <SelectItem value="2">2</SelectItem>
@@ -359,10 +620,18 @@ const CreateProfile = ({ onImageUpload, className = "" }) => {
                 {}
                 <button
                   type="submit"
+                  disabled={!isFormValid}
+                  onClick={handleSubmission}
                   className=" mt-4.5 signin-button w-full bg-green-600 dark:bg-gray-100 text-white dark:text-gray-900 py-2 px-4 rounded-md text-sm font-medium hover:bg-green-700 dark:hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-black transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Create Profile
                 </button>
+
+                {(!firstName || !lastName || !contactNo) && (
+                  <p className="text-xs text-center text-amber-500 mt-2">
+                    * Required fields must be filled
+                  </p>
+                )}
               </form>
             </div>
           </div>
