@@ -6,7 +6,7 @@ export const Home = () => {
   return (
     <div className="flex flex-col">
       <Navbar />
-      <div className="">This is boady</div>
+      <div className="mt-[100px] text-2xl text-center">Welcome to TPB (The Perfect Buddy)</div>
       <Footer/>
     </div>
   );

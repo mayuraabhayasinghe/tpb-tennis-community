@@ -1,6 +1,5 @@
 import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
-import { AuthProvider } from "../context/AuthContext";
 import { AuthButtonDesktop } from "./AuthButtonDesktop";
 import { AuthButtonMobile } from "./AuthButtonMobile";
 
@@ -10,7 +9,6 @@ export const Navbar = () => {
     setIsOpen(!isOpen);
   };
   return (
-    <AuthProvider>
       <nav className="fixed top-0 left-0 right-0 z-50">
         <div className="w-full px-3.5 lg:px-5 py-1.5 md:py-3 flex items-center justify-between bg-white/10 backdrop-blur-md border-b border-white/20 ">
           <div className="flex items-center gap-1.5">
@@ -139,6 +137,5 @@ export const Navbar = () => {
           <AuthButtonMobile />
         </div>
       </nav>
-    </AuthProvider>
   );
 };

@@ -6,12 +6,24 @@ import { Link } from "react-router-dom";
 export const AuthButtonDesktop = () => {
   const { user, signOut, logoutError } = useContext(authContext);
 
+  // Debug output to check what's in the user state
+  // console.log(
+  //   "AuthButtonDesktop rendering with user:",
+  //   user ? "Logged in" : "Not logged in"
+  // );
+  // if (user) {
+  //   console.log("AuthButtonDesktop - user details:", {
+  //     id: user.id,
+  //     email: user.email,
+  //   });
+  // }
+
   return (
     <div>
       {user ? (
         <Button
           onClick={signOut}
-          className="rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm lg:text-[15px]"
+          className="hidden md:flex md:display rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm lg:text-[15px]"
         >
           Log out
         </Button>

@@ -16,8 +16,18 @@ import { supabase } from "../services/createClient";
 
 const CreateProfile = ({ onImageUpload, className = "" }) => {
   //Getting user's id to put into profile table's id column
-  // const { user } = useContext(authContext);
-  // const userId = user.id;
+  const { user, loading } = useContext(authContext);
+  const [userId, setUserId] = useState(null);
+
+  // Use useEffect to safely set userId when user data is available
+  React.useEffect(() => {
+    if (user && user.id) {
+      console.log("User found, setting userId:", user.id);
+      setUserId(user.id);
+    } else if (!loading) {
+      console.log("No user found after loading completed");
+    }
+  }, [user, loading]);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -294,23 +304,33 @@ const CreateProfile = ({ onImageUpload, className = "" }) => {
   const handleSubmission = async (e) => {
     e.preventDefault();
 
+    // Check if userId is available
+    if (!userId) {
+      console.error("User ID not available. Please log in again.");
+      alert("Authentication error. Please log in again.");
+      return;
+    }
+
     // Validate all fields before submission
     const isValid = validateForm();
     if (!isValid) {
       return; // Stop submission if form is not valid
     }
 
+    // Initialize avatarPath variable outside the if block
+    let avatarPath = null;
+
     //convert the croppedImage(Blob URL) to JPEG file called avatarFile
     if (croppedImage) {
       const avatarFile = await convertBlopUrlToFile(croppedImage);
-      const avatarPath = await uploadProfilePic(userId, avatarFile);
+      avatarPath = await uploadProfilePic(userId, avatarFile);
     }
 
     //update the row where id equals to userId
     const { error } = await supabase
       .from("profiles")
       .update({
-        avatar_path: avatarPath || null,
+        avatar_path: avatarPath, // avatarPath will be null if no image was uploaded
         first_name: firstName,
         last_name: lastName,
         profession: profession || null,
@@ -335,6 +355,36 @@ const CreateProfile = ({ onImageUpload, className = "" }) => {
 
     alert("Profile created successfully!");
   };
+  // Handle authentication and loading states
+  // if (loading) {
+  //   return (
+  //     <>
+  //       <Navbar />
+  //       <div className="flex items-center justify-center min-h-screen">
+  //         <div className="p-8 m-4 bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
+  //           <h2 className="text-xl font-semibold mb-2">Loading your profile...</h2>
+  //           <p>Please wait while we set up your profile creation page</p>
+  //         </div>
+  //       </div>
+  //     </>
+  //   );
+  // }
+
+  // if (!user) {
+  //   // If user is not authenticated after loading completes
+  //   return (
+  //     <>
+  //       <Navbar />
+  //       <div className="flex items-center justify-center min-h-screen">
+  //         <div className="p-8 bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
+  //           <h2 className="text-xl font-semibold mb-2 text-red-600">Authentication Error</h2>
+  //           <p>Please <a href="/login" className="text-green-600 underline">log in</a> to create your profile.</p>
+  //         </div>
+  //       </div>
+  //     </>
+  //   );
+  // }
+
   return (
     <>
       <Navbar />

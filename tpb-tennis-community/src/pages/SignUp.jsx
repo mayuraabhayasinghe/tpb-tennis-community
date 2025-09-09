@@ -128,30 +128,68 @@ const SignUp = () => {
 
   //function to sign up with email and password
   const handleSignUpWithEmail = async function () {
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) {
-      setErrorMessage(error.message);
-      console.log(error.message);
-      return;
-    } else {
-      //get userId of auth.users table
-      const userId = data.session?.user?.id;
-      if (!userId) {
-        console.log("User id is undefined.");
-        navigate("/login");
+    try {
+      // Clear any previous error messages
+      setErrorMessage("");
+
+      if (!email || !password) {
+        setErrorMessage("Please enter both email and password");
         return;
-      } else {
-        //Insert userId as id in profiles table.
-        //The default value of isProfileComplete is false.
-        updateProfileCompletionState(userId);
       }
+
+      const { data, error } = await supabase.auth.signUp({ email, password });
+
+      if (error) {
+        setErrorMessage(error.message);
+        console.log("Signup error:", error.message);
+        return;
+      }
+
+      console.log("Signup successful:", data);
+
+      //get userId of auth.users table
+      const userId = data.user?.id;
+      
+      //Insert userId as id in profiles table.
+      //The default value of isProfileComplete is false.
+      await updateProfileCompletionState(userId);
+      navigate("/create-profile");
+
+      // if (!userId) {
+      //   console.log("User id is undefined.");
+      //   // With Supabase v2, email confirmation might be required
+      //   setErrorMessage(
+      //     "Please check your email to confirm your account before logging in"
+      //   );
+      //   setTimeout(() => navigate("/login"), 3000);
+      //   return;
+      // }
+    } catch (err) {
+      console.error("Unexpected error during signup:", err);
+      setErrorMessage("An unexpected error occurred. Please try again.");
     }
-    navigate("/create-profile");
-    return;
   };
 
   //The function to sign up with Google OAuth
-  const handleSignUpWithGoogle = async () => {};
+  // const handleSignUpWithGoogle = async () => {
+  //   try {
+  //     setErrorMessage("");
+  //     const { data, error } = await supabase.auth.signInWithOAuth({
+  //       provider: "google",
+  //       options: {
+  //         redirectTo: `${window.location.origin}/create-profile`,
+  //       },
+  //     });
+
+  //     if (error) {
+  //       setErrorMessage(error.message);
+  //       console.error("Google signup error:", error);
+  //     }
+  //   } catch (err) {
+  //     console.error("Unexpected error during Google signup:", err);
+  //     setErrorMessage("An unexpected error occurred with Google sign in.");
+  //   }
+  // };
 
   useEffect(() => {
     const handleValidation = () => {
@@ -173,11 +211,22 @@ const SignUp = () => {
           {}
           <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-lg p-8 shadow-sm">
             {}
-            <form className="space-y-6">
+            <form
+              className="space-y-6"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSignUpWithEmail();
+              }}
+            >
               {}
               <div className="space-y-2 text-center font-bold text-black text-lg">
-                <h1>Creat your account</h1>
+                <h1>Create your account</h1>
               </div>
+              {errorMessage && (
+                <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                  {errorMessage}
+                </div>
+              )}
 
               {}
               <div className="space-y-2">
@@ -265,7 +314,6 @@ const SignUp = () => {
               <button
                 type="submit"
                 disabled={!validation}
-                onSubmit={handleSignUpWithEmail}
                 className=" inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white dark:ring-offset-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-green-600 text-white hover:bg-green-700 h-10 px-4 py-2 w-full"
               >
                 Create account
@@ -286,7 +334,11 @@ const SignUp = () => {
 
             {}
             <div className="w-full">
-              <button className="w-full inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white dark:ring-offset-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-200 dark:border-gray-800 bg-white dark:bg-black hover:bg-gray-50 dark:hover:bg-gray-950 hover:text-gray-900 dark:hover:text-gray-50 h-10 px-4 py-2">
+              <button
+                type="button"
+                // onClick={handleSignUpWithGoogle}
+                className="w-full inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white dark:ring-offset-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-200 dark:border-gray-800 bg-white dark:bg-black hover:bg-gray-50 dark:hover:bg-gray-950 hover:text-gray-900 dark:hover:text-gray-50 h-10 px-4 py-2"
+              >
                 <GoogleIcon />
                 <span className="ml-2">Google</span>
               </button>

@@ -5,7 +5,6 @@ import { Navbar } from "../components/Navbar";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../services/createClient";
 import { authContext } from "../context/AuthContext";
-import { debugAuthState } from "../lib/authDebug";
 
 const MailIcon = () => (
   <svg
@@ -97,67 +96,86 @@ const GoogleIcon = () => (
     />
   </svg>
 );
-const Login = () => {
+
+const TestLogin = () => {
+  // State declarations
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [validation, setValidation] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState(false);
 
+  // Get navigation and auth context
   const navigate = useNavigate();
   const { user, loading } = useContext(authContext);
 
+  // Toggle password visibility
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
+  // Handle email/password login
   const handleLoginWithEmail = async function (e) {
     e.preventDefault();
     try {
-      setErrorMessage(""); // Clear any previous error messages
+      setErrorMessage("");
+      setIsLoading(true);
+      setLoginSuccess(false);
 
+      // Validate inputs
       if (!email || !password) {
         console.error("Email or password is empty");
         setErrorMessage("Please enter both email and password");
+        setIsLoading(false);
         return;
       }
 
       console.log("Attempting to log in with email:", email);
 
+      // Perform login with Supabase
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
+      // Handle errors
       if (error) {
         console.error("Login error:", error.message);
         setErrorMessage(error.message);
+        setIsLoading(false);
         return;
       }
 
+      // Handle no user data
       if (!data?.user) {
         console.error("No user data returned");
         setErrorMessage("Login failed. Please try again.");
+        setIsLoading(false);
         return;
       }
 
+      // Success!
       console.log("Login successful, user ID:", data.user.id);
-      
-      // Force refresh the session to ensure auth state is updated
-      const { data: sessionData } = await supabase.auth.getSession();
-      console.log("Session after login:", sessionData ? "Active" : "None");
-      
-      // Debug the auth state to help troubleshoot
-      // await debugAuthState();
+      setLoginSuccess(true);
 
-      // AuthContext will handle the navigation based on user.profile_complete
+      // Note: We don't need to navigate here, the authContext's onAuthStateChange
+      // listener will detect the auth state change and update the user state,
+      // which will trigger the useEffect below for navigation
+
+      // Delay turning off loading state briefly to show success message
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 1000);
     } catch (err) {
       console.error("Unexpected login error:", err);
       setErrorMessage("An unexpected error occurred. Please try again.");
+      setIsLoading(false);
     }
   };
 
-  // Function to handle Google login
+  // Handle Google login - kept as commented code as per your request
   // const handleGoogleLogin = async () => {
   //   try {
   //     setErrorMessage("");
@@ -182,7 +200,7 @@ const Login = () => {
   //   }
   // };
 
-  // Check if user is already logged in and redirect based on profile status
+  // Redirect if already logged in
   useEffect(() => {
     if (!loading && user) {
       if (user.profile_complete) {
@@ -211,16 +229,12 @@ const Login = () => {
       <Navbar />
       <div className="mt-20 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          {}
           <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-lg p-8 shadow-sm">
-            {}
             <form className="space-y-6" onSubmit={handleLoginWithEmail}>
-              {}
               <div className="space-y-2 text-center font-bold text-black text-lg">
                 <h1>Log in to your account</h1>
               </div>
 
-              {}
               <div className="space-y-2">
                 <label
                   htmlFor="email"
@@ -243,7 +257,6 @@ const Login = () => {
                 </div>
               </div>
 
-              {}
               <div className="space-y-2">
                 <label
                   htmlFor="password"
@@ -279,16 +292,21 @@ const Login = () => {
                 </div>
               )}
 
+              {loginSuccess && (
+                <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-md">
+                  Login successful! Redirecting...
+                </div>
+              )}
+
               <button
                 type="submit"
-                disabled={!validation}
-                className=" inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white dark:ring-offset-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-green-600 text-white hover:bg-green-700 h-10 px-4 py-2 w-full"
+                disabled={!validation || isLoading}
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white dark:ring-offset-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-green-600 text-white hover:bg-green-700 h-10 px-4 py-2 w-full"
               >
-                Log in
+                {isLoading ? "Logging in..." : "Log in"}
               </button>
             </form>
 
-            {}
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-gray-200 dark:border-gray-800" />
@@ -300,7 +318,6 @@ const Login = () => {
               </div>
             </div>
 
-            {}
             <div className="w-full">
               <button
                 type="button"
@@ -312,7 +329,6 @@ const Login = () => {
               </button>
             </div>
 
-            {}
             <div className="text-center mt-6">
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Don't have an account?{" "}
@@ -330,4 +346,5 @@ const Login = () => {
     </>
   );
 };
-export default Login;
+
+export default TestLogin;
