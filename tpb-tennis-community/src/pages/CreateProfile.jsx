@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useContext, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useContext,
+  useRef,
+  useCallback,
+  useEffect,
+} from "react";
 import ReactCrop, { centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import { Navbar } from "../components/Navbar";
@@ -13,21 +19,30 @@ import {
 } from "@/components/ui/select";
 import { authContext } from "../context/AuthContext";
 import { supabase } from "../services/createClient";
+import { useNavigate } from "react-router-dom";
 
 const CreateProfile = ({ onImageUpload, className = "" }) => {
   //Getting user's id to put into profile table's id column
   const { user, loading } = useContext(authContext);
   const [userId, setUserId] = useState(null);
+  const navigate = useNavigate();
 
   // Use useEffect to safely set userId when user data is available
-  React.useEffect(() => {
+  useEffect(() => {
     if (user && user.id) {
       console.log("User found, setting userId:", user.id);
+      console.log("User profile complete status:", user.profile_complete);
       setUserId(user.id);
+
+      // If profile is already complete, redirect to home
+      if (user.profile_complete) {
+        console.log("User already has a complete profile, redirecting to home");
+        navigate("/");
+      }
     } else if (!loading) {
       console.log("No user found after loading completed");
     }
-  }, [user, loading]);
+  }, [user, loading, navigate]);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -327,7 +342,10 @@ const CreateProfile = ({ onImageUpload, className = "" }) => {
     }
 
     //update the row where id equals to userId
-    const { error } = await supabase
+    console.log("Updating profile for user:", userId);
+    console.log("Setting isProfileComplete to true");
+
+    const { data, error } = await supabase
       .from("profiles")
       .update({
         avatar_path: avatarPath, // avatarPath will be null if no image was uploaded
@@ -337,23 +355,40 @@ const CreateProfile = ({ onImageUpload, className = "" }) => {
         contact_no: contactNo,
         city: city || null,
         skill_level: skillLevel,
-        isProfileComplete: true,
+        isProfileComplete: true, // This is critical - set to true when profile is complete
       })
-      .eq("id", userId);
+      .eq("id", userId)
+      .select();
 
     if (error) {
-      console.log(error.message);
+      console.error("Profile update error:", error.message);
       alert("Failed to create your profile. Try again!");
       return;
     }
 
-    setFirstName("");
+    setTimeout(function () {
+      setFirstName("");
     setLastName("");
     setProfession("");
     setContactNo("");
     setCity("");
+    setCroppedImage(null);
+    }, 2000);
 
+    console.log("Profile updated successfully:", data);
+    
     alert("Profile created successfully!");
+
+    // Force a refresh of the auth state to pick up the profile_complete change
+    // const { data: sessionData } = await supabase.auth.getSession();
+    // if (sessionData?.session) {
+    //   console.log("Refreshing auth session to update profile_complete state");
+    //   const { data: refreshData } = await supabase.auth.refreshSession();
+    //   console.log("Session refreshed:", !!refreshData);
+    // }
+
+    // Navigate to home page after profile creation
+    navigate("/");
   };
   // Handle authentication and loading states
   // if (loading) {

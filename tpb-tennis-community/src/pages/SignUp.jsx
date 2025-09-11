@@ -114,56 +114,83 @@ const SignUp = () => {
     setChecked(!checked);
   };
 
+  /**
+   * Creates a new profile entry for the user in the profiles table
+   * Explicitly sets isProfileComplete to false so it can be properly tracked
+   * @param {string} id - The user ID to associate with the profile
+   */
   const updateProfileCompletionState = async (id) => {
+    console.log("Creating initial profile for user ID:", id);
+
     const { data: profileData, error } = await supabase
       .from("profiles")
-      .insert({ id: id })
+      .insert({
+        id: id,
+        isProfileComplete: false, // Explicitly set the profile completion state
+      })
       .select();
+
     if (error) {
-      console.log(error);
-      return;
+      console.error("Error creating profile:", error);
+      return null;
     }
-    console.log(profileData);
+
+    console.log("Profile created successfully:", profileData);
+    return profileData;
   };
 
-  //function to sign up with email and password
+  /**
+   * Handle user signup with email and password
+   * Creates an auth entry and initializes a profile record
+   */
   const handleSignUpWithEmail = async function () {
     try {
       // Clear any previous error messages
       setErrorMessage("");
 
+      // Validate input fields
       if (!email || !password) {
         setErrorMessage("Please enter both email and password");
         return;
       }
 
+      console.log("Attempting to sign up with email:", email);
+
+      // Create the user authentication entry
       const { data, error } = await supabase.auth.signUp({ email, password });
 
       if (error) {
         setErrorMessage(error.message);
-        console.log("Signup error:", error.message);
+        console.error("Signup error:", error.message);
         return;
       }
 
       console.log("Signup successful:", data);
 
-      //get userId of auth.users table
+      // Get userId from the newly created auth entry
       const userId = data.user?.id;
-      
-      //Insert userId as id in profiles table.
-      //The default value of isProfileComplete is false.
-      await updateProfileCompletionState(userId);
-      navigate("/create-profile");
 
-      // if (!userId) {
-      //   console.log("User id is undefined.");
-      //   // With Supabase v2, email confirmation might be required
-      //   setErrorMessage(
-      //     "Please check your email to confirm your account before logging in"
-      //   );
-      //   setTimeout(() => navigate("/login"), 3000);
-      //   return;
-      // }
+      if (!userId) {
+        console.error("User ID is undefined after successful signup");
+        setErrorMessage(
+          "Account created but session data is missing. Please try logging in."
+        );
+        setTimeout(() => navigate("/login"), 3000);
+        return;
+      }
+
+      // Insert userId as id in profiles table with isProfileComplete explicitly set to false
+      const profileData = await updateProfileCompletionState(userId);
+
+      if (!profileData) {
+        console.error("Failed to create profile entry");
+        setErrorMessage(
+          "Account created but profile setup failed. Please continue to create your profile."
+        );
+      }
+
+      console.log("Redirecting to create-profile page");
+      navigate("/create-profile");
     } catch (err) {
       console.error("Unexpected error during signup:", err);
       setErrorMessage("An unexpected error occurred. Please try again.");
