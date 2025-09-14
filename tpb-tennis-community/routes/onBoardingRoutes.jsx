@@ -1,20 +1,14 @@
-import React, { useContext } from "react";
-import { authContext } from "../src/context/AuthContext";
+
+import { UserAuth } from "../src/context/AuthContext";
 import { Navigate } from "react-router-dom";
 
 export default function OnBoardingRoutes(props) {
-  const { user, loading } = useContext(authContext);
-
-  if (loading) {
-    return <div>Loading...</div>;
+  const { session, profile } = UserAuth();
+  if (!session) {
+    <Navigate to="/login" />;
   }
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (user.profile_complete) {
-    return <Navigate to="/" replace />;
+  if (session && profile) {
+    <Navigate to="/" />;
   }
   return props.children;
 }

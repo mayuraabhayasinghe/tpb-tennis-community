@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Navbar } from "../components/Navbar";
 import { Link, useNavigate } from "react-router-dom";
-import { supabase } from "../services/createClient";
-import { authContext } from "../context/AuthContext";
-import { debugAuthState } from "../lib/authDebug";
+import { UserAuth } from "../context/AuthContext";
+import AnimatedLogo from "../components/AnimatedLogo";
 
 const MailIcon = () => (
   <svg
@@ -101,11 +100,12 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const [validation, setValidation] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   const navigate = useNavigate();
-  const { user, loading } = useContext(authContext);
+  const { signIn, session } = UserAuth();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -113,47 +113,22 @@ const Login = () => {
 
   const handleLoginWithEmail = async function (e) {
     e.preventDefault();
+    setLoading(true);
+    setErrorMessage("");
     try {
-      setErrorMessage(""); // Clear any previous error messages
-
-      if (!email || !password) {
-        console.error("Email or password is empty");
-        setErrorMessage("Please enter both email and password");
+      const result = await signIn(email, password);
+      if (result.success) {
+        navigate("/");
+      } else if (!result.success) {
+        console.error("Login error:", result.error);
+        setErrorMessage(result.error);
         return;
       }
-
-      console.log("Attempting to log in with email:", email);
-
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        console.error("Login error:", error.message);
-        setErrorMessage(error.message);
-        return;
-      }
-
-      if (!data?.user) {
-        console.error("No user data returned");
-        setErrorMessage("Login failed. Please try again.");
-        return;
-      }
-
-      console.log("Login successful, user ID:", data.user.id);
-      
-      // Force refresh the session to ensure auth state is updated
-      const { data: sessionData } = await supabase.auth.getSession();
-      console.log("Session after login:", sessionData ? "Active" : "None");
-      
-      // Debug the auth state to help troubleshoot
-      // await debugAuthState();
-
-      // AuthContext will handle the navigation based on user.profile_complete
-    } catch (err) {
-      console.error("Unexpected login error:", err);
+    } catch (error) {
+      console.error("Unexpected login error:", error);
       setErrorMessage("An unexpected error occurred. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -182,17 +157,6 @@ const Login = () => {
   //   }
   // };
 
-  // Check if user is already logged in and redirect based on profile status
-  useEffect(() => {
-    if (!loading && user) {
-      if (user.profile_complete) {
-        navigate("/");
-      } else {
-        navigate("/create-profile");
-      }
-    }
-  }, [user, loading, navigate]);
-
   // Form validation
   useEffect(() => {
     const handlValidation = () => {
@@ -211,120 +175,125 @@ const Login = () => {
       <Navbar />
       <div className="mt-20 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          {}
-          <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-lg p-8 shadow-sm">
-            {}
-            <form className="space-y-6" onSubmit={handleLoginWithEmail}>
+          {loading ? (
+            <div className="flex -mt-20 h-screen justify-center items-center">
+              <AnimatedLogo type="bounce" size="default" />
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-lg p-8 shadow-sm">
               {}
-              <div className="space-y-2 text-center font-bold text-black text-lg">
-                <h1>Log in to your account</h1>
-              </div>
-
-              {}
-              <div className="space-y-2">
-                <label
-                  htmlFor="email"
-                  className="text-sm font-medium text-gray-900 dark:text-gray-100"
-                >
-                  Email
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
-                    <MailIcon />
-                  </div>
-                  <input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@example.com"
-                    className="flex h-10 w-full rounded-md border border-gray-200 focus:border-none dark:border-gray-800 bg-white dark:bg-black px-3 py-2 pl-10 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-green-400 dark:focus:ring-gray-300 focus:ring-offset-1 focus:ring-offset-white dark:focus:ring-offset-black disabled:cursor-not-allowed disabled:opacity-50"
-                  />
+              <form className="space-y-6" onSubmit={handleLoginWithEmail}>
+                {}
+                <div className="space-y-2 text-center font-bold text-black text-lg">
+                  <h1>Log in to your account</h1>
                 </div>
-              </div>
 
-              {}
-              <div className="space-y-2">
-                <label
-                  htmlFor="password"
-                  className="text-sm font-medium text-gray-900 dark:text-gray-100"
-                >
-                  Password
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
-                    <LockIcon />
-                  </div>
-                  <input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    className="flex h-10 w-full rounded-md border border-gray-200 focus:border-none dark:border-gray-800 bg-white dark:bg-black px-3 py-2 pl-10 pr-10 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-green-400 dark:focus:ring-gray-300 focus:ring-offset-1 focus:ring-offset-white dark:focus:ring-offset-black disabled:cursor-not-allowed disabled:opacity-50"
-                  />
-                  <button
-                    type="button"
-                    onClick={togglePasswordVisibility}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                {}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="email"
+                    className="text-sm font-medium text-gray-900 dark:text-gray-100"
                   >
-                    {showPassword ? <EyeIcon /> : <EyeOffIcon />}
-                  </button>
+                    Email
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
+                      <MailIcon />
+                    </div>
+                    <input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="name@example.com"
+                      className="flex h-10 w-full rounded-md border border-gray-200 focus:border-none dark:border-gray-800 bg-white dark:bg-black px-3 py-2 pl-10 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-green-400 dark:focus:ring-gray-300 focus:ring-offset-1 focus:ring-offset-white dark:focus:ring-offset-black disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              {errorMessage && (
-                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
-                  {errorMessage}
+                {}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="password"
+                    className="text-sm font-medium text-gray-900 dark:text-gray-100"
+                  >
+                    Password
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
+                      <LockIcon />
+                    </div>
+                    <input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                      className="flex h-10 w-full rounded-md border border-gray-200 focus:border-none dark:border-gray-800 bg-white dark:bg-black px-3 py-2 pl-10 pr-10 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-green-400 dark:focus:ring-gray-300 focus:ring-offset-1 focus:ring-offset-white dark:focus:ring-offset-black disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                    <button
+                      type="button"
+                      onClick={togglePasswordVisibility}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    >
+                      {showPassword ? <EyeIcon /> : <EyeOffIcon />}
+                    </button>
+                  </div>
                 </div>
-              )}
 
-              <button
-                type="submit"
-                disabled={!validation}
-                className=" inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white dark:ring-offset-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-green-600 text-white hover:bg-green-700 h-10 px-4 py-2 w-full"
-              >
-                Log in
-              </button>
-            </form>
+                {errorMessage && (
+                  <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                    {errorMessage}
+                  </div>
+                )}
 
-            {}
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-gray-200 dark:border-gray-800" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white dark:bg-black px-2 text-gray-500 dark:text-gray-400">
-                  Or sign in with
-                </span>
-              </div>
-            </div>
-
-            {}
-            <div className="w-full">
-              <button
-                type="button"
-                // onClick={handleGoogleLogin}
-                className="w-full inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white dark:ring-offset-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-200 dark:border-gray-800 bg-white dark:bg-black hover:bg-gray-50 dark:hover:bg-gray-950 hover:text-gray-900 dark:hover:text-gray-50 h-10 px-4 py-2"
-              >
-                <GoogleIcon />
-                <span className="ml-2">Google</span>
-              </button>
-            </div>
-
-            {}
-            <div className="text-center mt-6">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Don't have an account?{" "}
-                <Link
-                  to="/sign-up"
-                  className="font-medium text-gray-900 dark:text-gray-100 underline underline-offset-4 hover:no-underline"
+                <button
+                  type="submit"
+                  disabled={!validation}
+                  className=" inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white dark:ring-offset-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-green-600 text-white hover:bg-green-700 h-10 px-4 py-2 w-full"
                 >
-                  Sign up
-                </Link>
-              </p>
+                  Log in
+                </button>
+              </form>
+
+              {}
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-gray-200 dark:border-gray-800" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white dark:bg-black px-2 text-gray-500 dark:text-gray-400">
+                    Or sign in with
+                  </span>
+                </div>
+              </div>
+
+              {}
+              <div className="w-full">
+                <button
+                  type="button"
+                  // onClick={handleGoogleLogin}
+                  className="w-full inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white dark:ring-offset-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-200 dark:border-gray-800 bg-white dark:bg-black hover:bg-gray-50 dark:hover:bg-gray-950 hover:text-gray-900 dark:hover:text-gray-50 h-10 px-4 py-2"
+                >
+                  <GoogleIcon />
+                  <span className="ml-2">Google</span>
+                </button>
+              </div>
+
+              {}
+              <div className="text-center mt-6">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Don't have an account?{" "}
+                  <Link
+                    to="/sign-up"
+                    className="font-medium text-gray-900 dark:text-gray-100 underline underline-offset-4 hover:no-underline"
+                  >
+                    Sign up
+                  </Link>
+                </p>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </>

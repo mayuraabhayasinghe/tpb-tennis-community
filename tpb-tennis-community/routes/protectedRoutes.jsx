@@ -1,16 +1,14 @@
-import React, { useContext } from "react";
-import { authContext } from "../src/context/AuthContext";
+import { UserAuth } from "../src/context/AuthContext";
+import { Navigate } from "react-router-dom";
 
 export const ProtectedRoutes = (props) => {
-  const { user, loading } = useContext(authContext);
-  if (loading) {
-    return <div>Loading...</div>;
+  const { session, profile } = UserAuth();
+
+  if (!session) {
+    return <Navigate to="/login" />;
   }
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-  if (!user.profile_complete) {
-    return <Navigate to="/create-profile" replace />;
+  if (session && !profile) {
+    return <Navigate to="/create-profile" />;
   }
   return props.children;
 };

@@ -1,28 +1,29 @@
-import React, { useContext } from "react";
-import { authContext } from "../context/AuthContext";
+import React, { useContext, useState } from "react";
+import { UserAuth } from "../context/AuthContext";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
 
 export const AuthButtonDesktop = () => {
-  const { user, signOut, logoutError } = useContext(authContext);
+  const { session, signOut } = UserAuth();
 
-  // Debug output to check what's in the user state
-  // console.log(
-  //   "AuthButtonDesktop rendering with user:",
-  //   user ? "Logged in" : "Not logged in"
-  // );
-  // if (user) {
-  //   console.log("AuthButtonDesktop - user details:", {
-  //     id: user.id,
-  //     email: user.email,
-  //   });
-  // }
+  const [loading, setLoading] = useState(false);
+
+  const handleSignOut = async () => {
+    try {
+      setLoading(true);
+      await signOut();
+    } catch (error) {
+      console.error("Unexpected error occured at log out: ", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div>
-      {user ? (
+      {session ? (
         <Button
-          onClick={signOut}
+          onClick={handleSignOut}
           className="hidden md:flex md:display rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm lg:text-[15px]"
         >
           Log out

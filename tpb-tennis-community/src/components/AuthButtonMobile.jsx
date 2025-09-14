@@ -1,12 +1,13 @@
 import React, { useContext } from "react";
-import { authContext } from "../context/AuthContext";
+import { UserAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 
 export const AuthButtonMobile = () => {
-  const { user, signOut } = useContext(authContext);
+  const { session, signOut } = UserAuth();
+
   return (
     <>
-      {user ? (
+      {session ? (
         <button
           onClick={signOut}
           className="px-3 py-1.5 text-center rounded-xl bg-green-600 font-sans text-white font-medium transition-colors duration-200"

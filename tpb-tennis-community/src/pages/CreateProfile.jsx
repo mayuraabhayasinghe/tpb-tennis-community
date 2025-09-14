@@ -1,4 +1,4 @@
-"use client";
+// "use client";
 
 import React, {
   useState,
@@ -17,32 +17,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { authContext } from "../context/AuthContext";
+import { UserAuth } from "../context/AuthContext";
 import { supabase } from "../services/createClient";
 import { useNavigate } from "react-router-dom";
 
 const CreateProfile = ({ onImageUpload, className = "" }) => {
   //Getting user's id to put into profile table's id column
-  const { user, loading } = useContext(authContext);
+  const { session, profile } = UserAuth();
   const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
 
-  // Use useEffect to safely set userId when user data is available
+  // set userId when session is available
   useEffect(() => {
-    if (user && user.id) {
-      console.log("User found, setting userId:", user.id);
-      console.log("User profile complete status:", user.profile_complete);
-      setUserId(user.id);
-
-      // If profile is already complete, redirect to home
-      if (user.profile_complete) {
-        console.log("User already has a complete profile, redirecting to home");
-        navigate("/");
-      }
-    } else if (!loading) {
-      console.log("No user found after loading completed");
+    
+    if (session?.user) {
+      setUserId(session.user.id);
     }
-  }, [user, loading, navigate]);
+    // If profile is already complete, redirect to home
+    if (profile) {
+      console.log("User already has a profile, redirecting to home");
+      navigate("/");
+    }
+  }, [session]);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -366,26 +362,26 @@ const CreateProfile = ({ onImageUpload, className = "" }) => {
       return;
     }
 
-    setTimeout(function () {
-      setFirstName("");
-    setLastName("");
-    setProfession("");
-    setContactNo("");
-    setCity("");
-    setCroppedImage(null);
-    }, 2000);
+    // setTimeout(function () {
+    //   setFirstName("");
+    // setLastName("");
+    // setProfession("");
+    // setContactNo("");
+    // setCity("");
+    // setCroppedImage(null);
+    // }, 2000);
 
     console.log("Profile updated successfully:", data);
-    
+
     alert("Profile created successfully!");
 
-    // Force a refresh of the auth state to pick up the profile_complete change
-    // const { data: sessionData } = await supabase.auth.getSession();
-    // if (sessionData?.session) {
-    //   console.log("Refreshing auth session to update profile_complete state");
-    //   const { data: refreshData } = await supabase.auth.refreshSession();
-    //   console.log("Session refreshed:", !!refreshData);
-    // }
+    //Force a refresh of the auth state to pick up the profile_complete change
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (sessionData?.session) {
+      console.log("Refreshing auth session to update profile_complete state");
+      const { data: refreshData } = await supabase.auth.refreshSession();
+      console.log("Session refreshed:", !!refreshData);
+    }
 
     // Navigate to home page after profile creation
     navigate("/");

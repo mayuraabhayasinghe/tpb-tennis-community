@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Navbar } from "../components/Navbar";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../services/createClient";
+import { UserAuth } from "../context/AuthContext";
 
 const MailIcon = () => (
   <svg
@@ -97,12 +98,16 @@ const GoogleIcon = () => (
   </svg>
 );
 const SignUp = () => {
-  const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
   const [checked, setChecked] = useState(false);
   const [validation, setValidation] = useState(false);
+
+  const { session, signUp } = UserAuth();
 
   const navigate = useNavigate();
 
@@ -114,86 +119,29 @@ const SignUp = () => {
     setChecked(!checked);
   };
 
-  /**
-   * Creates a new profile entry for the user in the profiles table
-   * Explicitly sets isProfileComplete to false so it can be properly tracked
-   * @param {string} id - The user ID to associate with the profile
-   */
-  const updateProfileCompletionState = async (id) => {
-    console.log("Creating initial profile for user ID:", id);
+  const handleSignUpWithPassword = async function (e) {
+    e.preventDefault();
+    setLoading(true);
 
-    const { data: profileData, error } = await supabase
-      .from("profiles")
-      .insert({
-        id: id,
-        isProfileComplete: false, // Explicitly set the profile completion state
-      })
-      .select();
-
-    if (error) {
-      console.error("Error creating profile:", error);
-      return null;
-    }
-
-    console.log("Profile created successfully:", profileData);
-    return profileData;
-  };
-
-  /**
-   * Handle user signup with email and password
-   * Creates an auth entry and initializes a profile record
-   */
-  const handleSignUpWithEmail = async function () {
     try {
       // Clear any previous error messages
       setErrorMessage("");
 
-      // Validate input fields
-      if (!email || !password) {
-        setErrorMessage("Please enter both email and password");
+      const result = await signUp(email, password);
+
+      if (result.success) {
+        navigate("/create-profile");
+        console.log("Signup successful:", result.data);
+      } else if (!result.success) {
+        setErrorMessage(result.error);
+        console.error("Signup error:", result.error);
         return;
       }
-
-      console.log("Attempting to sign up with email:", email);
-
-      // Create the user authentication entry
-      const { data, error } = await supabase.auth.signUp({ email, password });
-
-      if (error) {
-        setErrorMessage(error.message);
-        console.error("Signup error:", error.message);
-        return;
-      }
-
-      console.log("Signup successful:", data);
-
-      // Get userId from the newly created auth entry
-      const userId = data.user?.id;
-
-      if (!userId) {
-        console.error("User ID is undefined after successful signup");
-        setErrorMessage(
-          "Account created but session data is missing. Please try logging in."
-        );
-        setTimeout(() => navigate("/login"), 3000);
-        return;
-      }
-
-      // Insert userId as id in profiles table with isProfileComplete explicitly set to false
-      const profileData = await updateProfileCompletionState(userId);
-
-      if (!profileData) {
-        console.error("Failed to create profile entry");
-        setErrorMessage(
-          "Account created but profile setup failed. Please continue to create your profile."
-        );
-      }
-
-      console.log("Redirecting to create-profile page");
-      navigate("/create-profile");
     } catch (err) {
       console.error("Unexpected error during signup:", err);
       setErrorMessage("An unexpected error occurred. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -235,155 +183,154 @@ const SignUp = () => {
       <Navbar />
       <div className="mt-20 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          {}
-          <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-lg p-8 shadow-sm">
-            {}
-            <form
-              className="space-y-6"
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSignUpWithEmail();
-              }}
-            >
+          {loading ? (
+            <div className="flex -mt-20 h-screen justify-center items-center">
+              <AnimatedLogo type="bounce" size="default" />
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-lg p-8 shadow-sm">
               {}
-              <div className="space-y-2 text-center font-bold text-black text-lg">
-                <h1>Create your account</h1>
-              </div>
-              {errorMessage && (
-                <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                  {errorMessage}
+              <form className="space-y-6" onSubmit={handleSignUpWithPassword}>
+                {}
+                <div className="space-y-2 text-center font-bold text-black text-lg">
+                  <h1>Create your account</h1>
                 </div>
-              )}
-
-              {}
-              <div className="space-y-2">
-                <label
-                  htmlFor="email"
-                  className="text-sm font-medium text-gray-900 dark:text-gray-100"
-                >
-                  Email
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
-                    <MailIcon />
+                {errorMessage && (
+                  <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                    {errorMessage}
                   </div>
-                  <input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@example.com"
-                    className="flex h-10 w-full rounded-md border border-gray-200 focus:border-none dark:border-gray-800 bg-white dark:bg-black px-3 py-2 pl-10 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-green-400 dark:focus:ring-gray-300 focus:ring-offset-1 focus:ring-offset-white dark:focus:ring-offset-black disabled:cursor-not-allowed disabled:opacity-50"
-                  />
-                </div>
-              </div>
+                )}
 
-              {}
-              <div className="space-y-2">
-                <label
-                  htmlFor="password"
-                  className="text-sm font-medium text-gray-900 dark:text-gray-100"
-                >
-                  Password
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
-                    <LockIcon />
-                  </div>
-                  <input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    className="flex h-10 w-full rounded-md border border-gray-200 focus:border-none dark:border-gray-800 bg-white dark:bg-black px-3 py-2 pl-10 pr-10 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-green-400 dark:focus:ring-gray-300 focus:ring-offset-1 focus:ring-offset-white dark:focus:ring-offset-black disabled:cursor-not-allowed disabled:opacity-50"
-                  />
-                  <button
-                    type="button"
-                    onClick={togglePasswordVisibility}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                {}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="email"
+                    className="text-sm font-medium text-gray-900 dark:text-gray-100"
                   >
-                    {showPassword ? <EyeIcon /> : <EyeOffIcon />}
-                  </button>
+                    Email
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
+                      <MailIcon />
+                    </div>
+                    <input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="name@example.com"
+                      className="flex h-10 w-full rounded-md border border-gray-200 focus:border-none dark:border-gray-800 bg-white dark:bg-black px-3 py-2 pl-10 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-green-400 dark:focus:ring-gray-300 focus:ring-offset-1 focus:ring-offset-white dark:focus:ring-offset-black disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                  </div>
+                </div>
+
+                {}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="password"
+                    className="text-sm font-medium text-gray-900 dark:text-gray-100"
+                  >
+                    Password
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
+                      <LockIcon />
+                    </div>
+                    <input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                      className="flex h-10 w-full rounded-md border border-gray-200 focus:border-none dark:border-gray-800 bg-white dark:bg-black px-3 py-2 pl-10 pr-10 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-green-400 dark:focus:ring-gray-300 focus:ring-offset-1 focus:ring-offset-white dark:focus:ring-offset-black disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                    <button
+                      type="button"
+                      onClick={togglePasswordVisibility}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    >
+                      {showPassword ? <EyeIcon /> : <EyeOffIcon />}
+                    </button>
+                  </div>
+                </div>
+
+                {}
+                <div className="flex items-start space-x-3">
+                  <input
+                    id="terms"
+                    type="checkbox"
+                    onClick={handleCheckClick}
+                    className="h-4 w-4 rounded border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 dark:focus:ring-gray-300  focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-black"
+                  />
+                  <label
+                    htmlFor="terms"
+                    className="text-sm text-gray-600 dark:text-gray-400 leading-5"
+                  >
+                    I agree to the{" "}
+                    <a
+                      href="#"
+                      className="font-medium text-gray-900 dark:text-gray-100 underline underline-offset-4 hover:no-underline"
+                    >
+                      Terms of Service
+                    </a>{" "}
+                    and{" "}
+                    <a
+                      href="#"
+                      className="font-medium text-gray-900 dark:text-gray-100 underline underline-offset-4 hover:no-underline"
+                    >
+                      Privacy Policy
+                    </a>
+                  </label>
+                </div>
+
+                {}
+                <button
+                  type="submit"
+                  disabled={!validation}
+                  className=" inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white dark:ring-offset-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-green-600 text-white hover:bg-green-700 h-10 px-4 py-2 w-full"
+                >
+                  Create account
+                </button>
+              </form>
+
+              {}
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-gray-200 dark:border-gray-800" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white dark:bg-black px-2 text-gray-500 dark:text-gray-400">
+                    Or continue with
+                  </span>
                 </div>
               </div>
 
               {}
-              <div className="flex items-start space-x-3">
-                <input
-                  id="terms"
-                  type="checkbox"
-                  onClick={handleCheckClick}
-                  className="h-4 w-4 rounded border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 dark:focus:ring-gray-300  focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-black"
-                />
-                <label
-                  htmlFor="terms"
-                  className="text-sm text-gray-600 dark:text-gray-400 leading-5"
+              <div className="w-full">
+                <button
+                  type="button"
+                  // onClick={handleSignUpWithGoogle}
+                  className="w-full inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white dark:ring-offset-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-200 dark:border-gray-800 bg-white dark:bg-black hover:bg-gray-50 dark:hover:bg-gray-950 hover:text-gray-900 dark:hover:text-gray-50 h-10 px-4 py-2"
                 >
-                  I agree to the{" "}
-                  <a
-                    href="#"
+                  <GoogleIcon />
+                  <span className="ml-2">Google</span>
+                </button>
+              </div>
+
+              {}
+              <div className="text-center mt-6">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Already have an account?{" "}
+                  <Link
+                    to="/login"
                     className="font-medium text-gray-900 dark:text-gray-100 underline underline-offset-4 hover:no-underline"
                   >
-                    Terms of Service
-                  </a>{" "}
-                  and{" "}
-                  <a
-                    href="#"
-                    className="font-medium text-gray-900 dark:text-gray-100 underline underline-offset-4 hover:no-underline"
-                  >
-                    Privacy Policy
-                  </a>
-                </label>
-              </div>
-
-              {}
-              <button
-                type="submit"
-                disabled={!validation}
-                className=" inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white dark:ring-offset-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-green-600 text-white hover:bg-green-700 h-10 px-4 py-2 w-full"
-              >
-                Create account
-              </button>
-            </form>
-
-            {}
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-gray-200 dark:border-gray-800" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white dark:bg-black px-2 text-gray-500 dark:text-gray-400">
-                  Or continue with
-                </span>
+                    Log in
+                  </Link>
+                </p>
               </div>
             </div>
-
-            {}
-            <div className="w-full">
-              <button
-                type="button"
-                // onClick={handleSignUpWithGoogle}
-                className="w-full inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white dark:ring-offset-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-200 dark:border-gray-800 bg-white dark:bg-black hover:bg-gray-50 dark:hover:bg-gray-950 hover:text-gray-900 dark:hover:text-gray-50 h-10 px-4 py-2"
-              >
-                <GoogleIcon />
-                <span className="ml-2">Google</span>
-              </button>
-            </div>
-
-            {}
-            <div className="text-center mt-6">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Already have an account?{" "}
-                <Link
-                  to="/login"
-                  className="font-medium text-gray-900 dark:text-gray-100 underline underline-offset-4 hover:no-underline"
-                >
-                  Log in
-                </Link>
-              </p>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </>
