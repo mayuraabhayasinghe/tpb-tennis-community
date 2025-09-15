@@ -72,6 +72,56 @@ const EyeOffIcon = () => (
   </svg>
 );
 
+const PhoneIcon = () => (
+  <svg
+    fill="#99A1AF"
+    stroke="currentColor"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M3,4.5 L3,6.50657781 C3,14.5147067 9.49187113,21.0065778 17.5,21.0065778 L19.5,21.0065778 C20.3284271,21.0065778 21,20.3350049 21,19.5065778 L21,16.9415184 C21,16.2958728 20.5868549,15.7226646 19.9743416,15.5184935 L16.7910868,14.4574086 C16.1493722,14.2435037 15.4438837,14.4855623 15.0686697,15.0483832 L14.3397029,16.1418335 C13.9644889,16.7046545 13.2590004,16.9467131 12.6172858,16.7328082 L11.0918861,16.2243416 C9.52761302,15.7029173 8.32743167,14.4342085 7.89358037,12.8434204 L7.26652359,10.5442122 C7.05705568,9.7761632 7.48408037,8.97826027 8.23932768,8.72651116 L8.84188612,8.52565835 C9.4722734,8.31552926 9.85610633,7.67801925 9.74686542,7.02257376 L9.28533671,4.25340152 C9.16478972,3.53011956 8.53900455,3 7.80574582,3 L4.5,3 C3.67157288,3 3,3.67157288 3,4.5 Z M2,4.5 C2,3.11928813 3.11928813,2 4.5,2 L7.80574582,2 C9.02784371,2 10.070819,2.88353261 10.2717306,4.08900253 L10.7332593,6.85817477 C10.9233967,7.99899864 10.2553231,9.10860523 9.15811388,9.47434165 L8.55555544,9.67519446 C8.30380634,9.75911083 8.16146478,10.0250785 8.23128742,10.2810948 L8.85834419,12.580303 C9.20422134,13.8485192 10.1610361,14.8599657 11.4081139,15.2756584 L12.9335135,15.7841249 C13.1474184,15.8554265 13.3825812,15.7747403 13.5076526,15.5871333 L14.2366194,14.493683 C14.861976,13.5556481 16.0377903,13.1522171 17.1073146,13.5087253 L20.2905694,14.5698102 C21.3114248,14.9100953 22,15.8654424 22,16.9415184 L22,19.5065778 C22,20.8872897 20.8807119,22.0065778 19.5,22.0065778 L17.5,22.0065778 C8.93958638,22.0065778 2,15.0669914 2,6.50657781 L2,4.5 Z" />
+  </svg>
+);
+
+const NameIcon = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 48 48"
+    fill="none"
+    stroke="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      cx="24"
+      cy="11"
+      r="7"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M4 41C4 32.1634 12.0589 25 22 25"
+      stroke="currentColor"
+      strokeWidth="5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M31 42L41 32L37 28L27 38V42H31Z"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 const GoogleIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -98,6 +148,11 @@ const GoogleIcon = () => (
   </svg>
 );
 const SignUp = () => {
+  const { session, signUp } = UserAuth();
+
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [contactNo, setContactNo] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -106,8 +161,6 @@ const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [checked, setChecked] = useState(false);
   const [validation, setValidation] = useState(false);
-
-  const { session, signUp } = UserAuth();
 
   const navigate = useNavigate();
 
@@ -119,10 +172,7 @@ const SignUp = () => {
     setChecked(!checked);
   };
 
-  const handleSignUpWithPassword = async function (e) {
-    e.preventDefault();
-    setLoading(true);
-
+  const handleSignUpWithPassword = async function () {
     try {
       // Clear any previous error messages
       setErrorMessage("");
@@ -142,6 +192,15 @@ const SignUp = () => {
       setErrorMessage("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSubmission = async (e) => {
+    e.preventDefault();
+    setErrorMessage("");
+    try {
+    } catch (error) {
+    } finally {
     }
   };
 
@@ -190,7 +249,7 @@ const SignUp = () => {
           ) : (
             <div className="bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-lg p-8 shadow-sm">
               {}
-              <form className="space-y-6" onSubmit={handleSignUpWithPassword}>
+              <form className="space-y-6" onSubmit={handleSubmission}>
                 {}
                 <div className="space-y-2 text-center font-bold text-black text-lg">
                   <h1>Create your account</h1>
@@ -201,7 +260,76 @@ const SignUp = () => {
                   </div>
                 )}
 
-                {}
+                {/* First Name */}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="firstname"
+                    className="text-sm font-medium text-gray-900 dark:text-gray-100"
+                  >
+                    First Name
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
+                      <NameIcon />
+                    </div>
+                    <input
+                      id="firstname"
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      placeholder="Jhone"
+                      className="flex h-10 w-full rounded-md border border-gray-200 focus:border-none dark:border-gray-800 bg-white dark:bg-black px-3 py-2 pl-10 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-green-400 dark:focus:ring-gray-300 focus:ring-offset-1 focus:ring-offset-white dark:focus:ring-offset-black disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                  </div>
+                </div>
+
+                {/* Last Name */}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="lastname"
+                    className="text-sm font-medium text-gray-900 dark:text-gray-100"
+                  >
+                    Last Name
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
+                      <NameIcon />
+                    </div>
+                    <input
+                      id="lastname"
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      placeholder="Doe"
+                      className="flex h-10 w-full rounded-md border border-gray-200 focus:border-none dark:border-gray-800 bg-white dark:bg-black px-3 py-2 pl-10 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-green-400 dark:focus:ring-gray-300 focus:ring-offset-1 focus:ring-offset-white dark:focus:ring-offset-black disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                  </div>
+                </div>
+
+                {/* Phone Number */}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="phonenumber"
+                    className="text-sm font-medium text-gray-900 dark:text-gray-100"
+                  >
+                    Phone Number
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
+                      <PhoneIcon />
+                    </div>
+                    <input
+                      id="phonenumber"
+                      type="text"
+                      value={contactNo}
+                      onChange={(e) => setContactNo(e.target.value)}
+                      placeholder="077-XXX-XXXX"
+                      className="flex h-10 w-full rounded-md border border-gray-200 focus:border-none dark:border-gray-800 bg-white dark:bg-black px-3 py-2 pl-10 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-green-400 dark:focus:ring-gray-300 focus:ring-offset-1 focus:ring-offset-white dark:focus:ring-offset-black disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                  </div>
+                </div>
+
+                {/* Email */}
                 <div className="space-y-2">
                   <label
                     htmlFor="email"
@@ -224,7 +352,7 @@ const SignUp = () => {
                   </div>
                 </div>
 
-                {}
+                {/* Password */}
                 <div className="space-y-2">
                   <label
                     htmlFor="password"
@@ -238,6 +366,36 @@ const SignUp = () => {
                     </div>
                     <input
                       id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                      className="flex h-10 w-full rounded-md border border-gray-200 focus:border-none dark:border-gray-800 bg-white dark:bg-black px-3 py-2 pl-10 pr-10 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-green-400 dark:focus:ring-gray-300 focus:ring-offset-1 focus:ring-offset-white dark:focus:ring-offset-black disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                    <button
+                      type="button"
+                      onClick={togglePasswordVisibility}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    >
+                      {showPassword ? <EyeIcon /> : <EyeOffIcon />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Confirm Password */}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="confirmpassword"
+                    className="text-sm font-medium text-gray-900 dark:text-gray-100"
+                  >
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
+                      <LockIcon />
+                    </div>
+                    <input
+                      id="confirmpassword"
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -293,8 +451,7 @@ const SignUp = () => {
                 </button>
               </form>
 
-              {}
-              <div className="relative my-6">
+              {/* <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t border-gray-200 dark:border-gray-800" />
                 </div>
@@ -305,7 +462,7 @@ const SignUp = () => {
                 </div>
               </div>
 
-              {}
+              
               <div className="w-full">
                 <button
                   type="button"
@@ -315,7 +472,7 @@ const SignUp = () => {
                   <GoogleIcon />
                   <span className="ml-2">Google</span>
                 </button>
-              </div>
+              </div> */}
 
               {}
               <div className="text-center mt-6">

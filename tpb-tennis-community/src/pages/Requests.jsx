@@ -1,7 +1,10 @@
 import React from "react";
 import { Navbar } from "../components/Navbar";
+import { UserAuth } from "../context/AuthContext";
 
 export const Requests = () => {
+  const { session, profile } = UserAuth();
+
   return (
     <>
       <Navbar />

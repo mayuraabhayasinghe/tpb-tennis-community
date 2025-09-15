@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Navbar } from "../components/Navbar";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { UserAuth } from "../context/AuthContext";
 import AnimatedLogo from "../components/AnimatedLogo";
 
@@ -105,7 +105,7 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   const navigate = useNavigate();
-  const { signIn, session } = UserAuth();
+  const { signIn } = UserAuth();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);

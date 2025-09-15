@@ -27,14 +27,7 @@ function App() {
           <Route path="/loading-demo" element={<LoadingDemo />} />
 
           {/* Protected routes */}
-          <Route
-            path="/requests"
-            element={
-              <ProtectedRoutes>
-                <Requests />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/requests" element={<Requests />} />
           <Route
             path="/rankings"
             element={
@@ -53,15 +46,8 @@ function App() {
           />
 
           {/* Onboarding protected route */}
-          <Route
-            path="/create-profile"
-            element={
-              <OnBoardingRoutes>
-                <CreateProfile />
-              </OnBoardingRoutes>
-            }
-          />
-          
+          <Route path="/create-profile" element={<CreateProfile />} />
+
           {/* Fallback route - redirects to home if no other routes match */}
           <Route path="*" element={<Home />} />
 

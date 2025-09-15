@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
     return { success: true, data };
   };
 
-  //Sign in
+  //Sign in with email/password
   const signIn = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email,
@@ -42,6 +42,21 @@ export const AuthProvider = ({ children }) => {
     return { success: true, data };
   };
 
+  // Sign in with Google
+  const signInWithGoogle = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+    });
+
+    if (error) {
+      console.error("Google login error:", error);
+      return { success: false, error: error.message };
+    }
+
+    // Supabase will handle redirect → your app’s redirect URL must be set in Dashboard
+    return { success: true, data };
+  };
+
   //Sign out
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -50,35 +65,36 @@ export const AuthProvider = ({ children }) => {
       console.error("Logout error:", error);
       return;
     }
-
+    setSession(null);
+    setProfile(null);
     console.log("User signed out successfully");
     navigate("/");
   };
 
   //Fetch user profile
-  const fetchProfile = async (userId) => {
-    try {
-      if (!userId) {
-        return null;
-      }
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
+  // const fetchProfile = async (userId) => {
+  //   try {
+  //     if (!userId) {
+  //       return null;
+  //     }
+  //     const { data, error } = await supabase
+  //       .from("profiles")
+  //       .select("*")
+  //       .eq("id", userId)
+  //       .single();
 
-      if (error) {
-        console.log("Error fetch profile: ", error.message);
-        return null;
-      }
+  //     if (error) {
+  //       console.log("Error fetch profile: ", error.message);
+  //       return null;
+  //     }
 
-      setProfile(data);
-      return data;
-    } catch (error) {
-      console.error("Unexpected error fetching profile:", error);
-      return null;
-    }
-  };
+  //     setProfile(data);
+  //     return data;
+  //   } catch (error) {
+  //     console.error("Unexpected error fetching profile:", error);
+  //     return null;
+  //   }
+  // };
 
   useEffect(() => {
     async function getSessionAndProfile() {
@@ -87,9 +103,9 @@ export const AuthProvider = ({ children }) => {
       } = await supabase.auth.getSession();
       setSession(session);
 
-      if (session?.user) {
-        await fetchProfile(session.user.id);
-      }
+      // if (session?.user) {
+      //   await fetchProfile(session.user.id);
+      // }
     }
 
     getSessionAndProfile();
@@ -98,11 +114,11 @@ export const AuthProvider = ({ children }) => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
-      if (session?.user) {
-        await fetchProfile(session.user.id);
-      } else {
-        setProfile(null);
-      }
+      // if (session?.user) {
+      //   await fetchProfile(session.user.id);
+      // } else {
+      //   setProfile(null);
+      // }
     });
 
     return () => {
@@ -111,7 +127,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <authContext.Provider value={{ session, signUp, signIn, signOut, profile }}>
+    <authContext.Provider value={{ session, signUp, signIn, signOut }}>
       {children}
     </authContext.Provider>
   );

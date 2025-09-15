@@ -23,13 +23,16 @@ import { useNavigate } from "react-router-dom";
 
 const CreateProfile = ({ onImageUpload, className = "" }) => {
   //Getting user's id to put into profile table's id column
-  const { session, profile } = UserAuth();
+  // const { session, profile, fetchProfile } = UserAuth();
   const [userId, setUserId] = useState(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // console.log(profile);
+  // console.log(session);
 
   // set userId when session is available
   useEffect(() => {
-    
     if (session?.user) {
       setUserId(session.user.id);
     }
@@ -38,7 +41,7 @@ const CreateProfile = ({ onImageUpload, className = "" }) => {
       console.log("User already has a profile, redirecting to home");
       navigate("/");
     }
-  }, [session]);
+  }, []);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -314,107 +317,76 @@ const CreateProfile = ({ onImageUpload, className = "" }) => {
 
   const handleSubmission = async (e) => {
     e.preventDefault();
+    try {
+      setLoading(true);
+      // Check if userId is available
+      if (!userId) {
+        console.error("User ID not available. Please log in again.");
+        alert("Authentication error. Please log in again.");
+        return;
+      }
 
-    // Check if userId is available
-    if (!userId) {
-      console.error("User ID not available. Please log in again.");
-      alert("Authentication error. Please log in again.");
-      return;
+      // Validate all fields before submission
+      const isValid = validateForm();
+      if (!isValid) {
+        return; // Stop submission if form is not valid
+      }
+
+      // Initialize avatarPath variable outside the if block
+      let avatarPath = null;
+
+      //convert the croppedImage(Blob URL) to JPEG file called avatarFile
+      if (croppedImage) {
+        const avatarFile = await convertBlopUrlToFile(croppedImage);
+        avatarPath = await uploadProfilePic(userId, avatarFile);
+      }
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .insert([
+          {
+            id: userId,
+            avatar_path: avatarPath, // avatarPath will be null if no image was uploaded
+            first_name: firstName,
+            last_name: lastName,
+            profession: profession || null,
+            contact_no: contactNo,
+            city: city || null,
+            skill_level: skillLevel,
+            isProfileComplete: true, // This is critical - set to true when profile is complete
+          },
+        ])
+        .select();
+
+      if (error) {
+        console.error("Profile creation error:", error.message);
+        alert("Failed to create your profile. Try again!");
+        return;
+      }
+
+      // setTimeout(function () {
+      //   setFirstName("");
+      // setLastName("");
+      // setProfession("");
+      // setContactNo("");
+      // setCity("");
+      // setCroppedImage(null);
+      // }, 2000);
+
+      console.log("Profile updated successfully:", data);
+      await fetchProfile(userId);
+      // await new Promise((r) => setTimeout(r, 500)); // Small delay to ensure state update
+
+      alert("Profile created successfully!");
+
+      // Navigate to home page after profile creation
+      navigate("/");
+    } catch (error) {
+      console.error("An unexpected error occurred: ", error);
+    } finally {
+      setLoading(false);
     }
-
-    // Validate all fields before submission
-    const isValid = validateForm();
-    if (!isValid) {
-      return; // Stop submission if form is not valid
-    }
-
-    // Initialize avatarPath variable outside the if block
-    let avatarPath = null;
-
-    //convert the croppedImage(Blob URL) to JPEG file called avatarFile
-    if (croppedImage) {
-      const avatarFile = await convertBlopUrlToFile(croppedImage);
-      avatarPath = await uploadProfilePic(userId, avatarFile);
-    }
-
-    //update the row where id equals to userId
-    console.log("Updating profile for user:", userId);
-    console.log("Setting isProfileComplete to true");
-
-    const { data, error } = await supabase
-      .from("profiles")
-      .update({
-        avatar_path: avatarPath, // avatarPath will be null if no image was uploaded
-        first_name: firstName,
-        last_name: lastName,
-        profession: profession || null,
-        contact_no: contactNo,
-        city: city || null,
-        skill_level: skillLevel,
-        isProfileComplete: true, // This is critical - set to true when profile is complete
-      })
-      .eq("id", userId)
-      .select();
-
-    if (error) {
-      console.error("Profile update error:", error.message);
-      alert("Failed to create your profile. Try again!");
-      return;
-    }
-
-    // setTimeout(function () {
-    //   setFirstName("");
-    // setLastName("");
-    // setProfession("");
-    // setContactNo("");
-    // setCity("");
-    // setCroppedImage(null);
-    // }, 2000);
-
-    console.log("Profile updated successfully:", data);
-
-    alert("Profile created successfully!");
-
-    //Force a refresh of the auth state to pick up the profile_complete change
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (sessionData?.session) {
-      console.log("Refreshing auth session to update profile_complete state");
-      const { data: refreshData } = await supabase.auth.refreshSession();
-      console.log("Session refreshed:", !!refreshData);
-    }
-
-    // Navigate to home page after profile creation
-    navigate("/");
   };
-  // Handle authentication and loading states
-  // if (loading) {
-  //   return (
-  //     <>
-  //       <Navbar />
-  //       <div className="flex items-center justify-center min-h-screen">
-  //         <div className="p-8 m-4 bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
-  //           <h2 className="text-xl font-semibold mb-2">Loading your profile...</h2>
-  //           <p>Please wait while we set up your profile creation page</p>
-  //         </div>
-  //       </div>
-  //     </>
-  //   );
-  // }
-
-  // if (!user) {
-  //   // If user is not authenticated after loading completes
-  //   return (
-  //     <>
-  //       <Navbar />
-  //       <div className="flex items-center justify-center min-h-screen">
-  //         <div className="p-8 bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
-  //           <h2 className="text-xl font-semibold mb-2 text-red-600">Authentication Error</h2>
-  //           <p>Please <a href="/login" className="text-green-600 underline">log in</a> to create your profile.</p>
-  //         </div>
-  //       </div>
-  //     </>
-  //   );
-  // }
 
   return (
     <>
