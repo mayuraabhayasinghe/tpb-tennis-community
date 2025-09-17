@@ -21,8 +21,6 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-    
-      
       <Toaster position='top-right' />
         <Routes>
           {/* Public routes */}
@@ -70,7 +68,7 @@ function App() {
           <Route path="/hostGame" element={<HostAGame/>}/>
           <Route path="/games" element={<Games/>}/>
         </Routes>
-        <Toaster/>
+       
       </AuthProvider>
     </BrowserRouter>
   );
