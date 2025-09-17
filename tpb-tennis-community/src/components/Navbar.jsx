@@ -22,7 +22,7 @@ export const Navbar = () => {
 
         {/* dekstop menu links */}
         <div className="hidden md:flex md:display gap-6 lg:gap-10 font-sans text-sm lg:text-[15px]">
-          <Link className="hover:text-blue-500" to="">
+          <Link className="hover:text-blue-500" to="/games">
             Games
           </Link>
           <Link className="hover:text-blue-500" to="">
@@ -126,13 +126,13 @@ export const Navbar = () => {
       >
         <Link
           className="hover:text-blue-500 transition-colors duration-200"
-          to=""
+          to="/games"
         >
           Games
         </Link>
         <Link
           className="hover:text-blue-500 transition-colors duration-200"
-          to=""
+          to="/games"
         >
           Requests
         </Link>

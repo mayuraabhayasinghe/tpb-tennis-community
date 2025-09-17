@@ -1,0 +1,163 @@
+import React, { useState, useEffect } from 'react';
+import { Navbar } from "../components/Navbar";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "../services/createClient.js";
+import { LuFilter } from "react-icons/lu";
+import { BsCalendar2Date } from "react-icons/bs";
+import { MdOutlineAccessTime } from "react-icons/md";
+import { CiLocationOn } from "react-icons/ci";
+import { FaTrophy } from "react-icons/fa";
+import { GoPeople } from "react-icons/go";
+import { IoIosSearch } from "react-icons/io";
+import { FaPlus } from "react-icons/fa6";
+
+
+export default function Games() {
+  const [games, setGames] = useState([]);
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const fetchGames = async () => {
+      const { data, error } = await supabase
+        .from('games')
+        .select(`
+          id,
+          reference_number,
+          court_name,
+          game_date,
+          game_start_time,
+          game_end_time,
+          total_vacancies,
+          available_vacancies,
+          required_skill_level,
+          status,
+          profiles:host_user_id (
+            first_name
+      
+          )
+        `);
+
+      if (error) {
+        console.error(error);
+      } else {
+        setGames(data);
+      }
+    };
+    fetchGames();
+  }, []);
+
+  return (
+    <div className="flex flex-col">
+              <Navbar />
+    <div className='flex justify-center bg-[#F9FAFB]'>
+    <div className=' min-h-screen w-[1500px] flex flex-col gap-6 p-6'>
+      <div className='flex flex-col relative'>
+      <h1 className='font-bold text-2xl'>Find Tennis Games</h1>
+      <p className='text-gray-500'>Discover games in your area and join the fun!</p>
+       <button onClick={()=>{navigate('/hostGame')}} className=' absolute right-1 w-[150px] h-[50px] bg-[#16A34A] rounded-3xl font-semibold text-white cursor-pointer flex items-center justify-center gap-1'><FaPlus  /> Host a Game</button>
+      </div>
+
+      <div className='shadow-sm bg-white rounded-xl p-1.5 flex flex-row gap-2 relative'>
+        <IoIosSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 ml-0.5" />
+        <input
+          className="pl-8 w-full bg-[#F9FAFB] border rounded-lg border-gray-300 p-2"
+          type="text"
+          placeholder="Search by court name or host"
+        />
+        <button className='border rounded-lg border-gray-400 flex flex-row items-center justify-center w-[100px] h-[50px] p-2'><LuFilter /> Filter</button>
+      </div>
+      <div className="flex flex-wrap gap-6">
+      {games.map((game) => {
+            let borderColor = "";
+            let statusLabel = "";
+
+            if (game.status === "open") {
+              borderColor = "border-[#93E9B3]"; // green border
+            } else if (game.status === "filled") {
+              borderColor = "border-yellow-400"; // yellow border
+              statusLabel = "FILLED";
+            } else if (game.status === "expired") {
+              borderColor = "border-gray-400"; // gray border
+              statusLabel = "EXPIRED";
+            }
+        return (
+        <div key={game.id} className={`relative border-2 rounded-lg ${borderColor} w-[500px] h-[300px] shadow-md p-4 flex flex-col justify-between`}>
+          {/* Full-width status banner */}
+                {statusLabel && (
+                  <span
+                    className={`absolute top-0 left-0 w-full text-center py-1 font-bold text-white rounded-t-lg
+                      ${game.status === "filled" ? "bg-yellow-400" : "bg-gray-400"}`}
+                  >
+                    {statusLabel}
+                  </span>
+                )}
+        <div className={`mt-${statusLabel ? "8" : "1"} flex flex-col gap-2`}>
+          <div className='flex flex-row relative justify-between'>
+          <h2 className='font-semibold text-xl'>{game.court_name}</h2>
+          <p className='absolute right-0.5 w-[150px] min-h-[30px] bg-gray-200 text-gray-700 pr-2 flex items-center justify-center rounded-lg'>Ref# TPB {game.reference_number}</p>
+          </div>
+          <p className='text-gray-500 text-lg gap-2 flex flex-row items-center'>
+            <BsCalendar2Date /> {new Date(game.game_date).toLocaleDateString("en-US", {
+            month: "short",  // Aug
+            day: "numeric",  // 19
+            year: "numeric", // 2025
+          })}
+          </p>
+          <p className='text-gray-500 text-lg gap-2 flex flex-row items-center'> <MdOutlineAccessTime />
+              {new Date(`${game.game_date}T${game.game_start_time}`).toLocaleTimeString("en-US", {
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true, // 12-hour format with am/pm
+            })} 
+            {" - "}
+            {new Date(`${game.game_date}T${game.game_end_time}`).toLocaleTimeString("en-US", {
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            })}
+          </p>
+          <p className='text-gray-500 text-lg gap-2 flex flex-row items-center'><CiLocationOn /> Hosted by {game.profiles?.first_name || "Unknown"}</p>
+          <div className="flex justify-between mt-3 items-center">
+                {/* Skill Level */}
+                <div>
+                  <p className="text-sm font-medium text-gray-400">Skill Level</p>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((level) => (
+                      <span
+                        key={level}
+                        className={`w-5 h-5 rounded-full ${
+                          level <= game.required_skill_level ? "bg-yellow-400" : "bg-gray-300"
+                        }`}
+                      ></span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Host Rating */}
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-400">Host Rating</p>
+                  <div className="flex items-center gap-1 justify-end">
+                    <FaTrophy className="text-yellow-500 w-6 h-6" />
+                    <span className="font-semibold">3.45</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Spots left */}
+              <div className='flex items-center justify-between mt-2'>
+              <p className="mt-2 text-lg text-green-600 font-semibold flex items-center gap-1">
+               <GoPeople /> {game.available_vacancies} spots left
+              </p>
+              <button className='w-[150px] h-[40px] bg-[#16A34A] rounded-xl font-semibold text-white cursor-pointer'>Request to Join</button>
+              </div>
+          
+        </div>
+      </div>  
+        )
+    })}
+      </div>
+    </div>
+    </div>
+    </div>
+  );
+}
