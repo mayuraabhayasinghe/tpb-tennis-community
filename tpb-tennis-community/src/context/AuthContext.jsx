@@ -23,6 +23,9 @@ export const AuthProvider = ({ children }) => {
       return { success: false, error: error.message };
     }
 
+    // Update session immediately after successful signup
+    setSession(data.session);
+
     return { success: true, data };
   };
 
@@ -84,7 +87,7 @@ export const AuthProvider = ({ children }) => {
   //       .single();
 
   //     if (error) {
-  //       console.log("Error fetch profile: ", error.message);
+  //       console.log("Error fetching profile: ", error.message);
   //       return null;
   //     }
 
@@ -102,32 +105,25 @@ export const AuthProvider = ({ children }) => {
         data: { session },
       } = await supabase.auth.getSession();
       setSession(session);
-
-      // if (session?.user) {
-      //   await fetchProfile(session.user.id);
-      // }
     }
 
     getSessionAndProfile();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      // if (session?.user) {
-      //   await fetchProfile(session.user.id);
-      // } else {
-      //   setProfile(null);
-      // }
-    });
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        setSession(session);
+      }
+    );
 
     return () => {
-      subscription.unsubscribe();
+      authListener?.subscription.unsubscribe();
     };
+
+    
   }, []);
 
   return (
-    <authContext.Provider value={{ session, signUp, signIn, signOut }}>
+    <authContext.Provider value={{ session, profile, signUp, signIn, signOut }}>
       {children}
     </authContext.Provider>
   );

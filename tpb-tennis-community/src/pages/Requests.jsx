@@ -4,7 +4,7 @@ import { UserAuth } from "../context/AuthContext";
 
 export const Requests = () => {
   const { session, profile } = UserAuth();
-
+  console.log(profile);
   return (
     <>
       <Navbar />

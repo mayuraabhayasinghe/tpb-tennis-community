@@ -27,7 +27,14 @@ function App() {
           <Route path="/loading-demo" element={<LoadingDemo />} />
 
           {/* Protected routes */}
-          <Route path="/requests" element={<Requests />} />
+          <Route
+            path="/requests"
+            element={
+              <ProtectedRoutes>
+                <Requests />
+              </ProtectedRoutes>
+            }
+          />
           <Route
             path="/rankings"
             element={

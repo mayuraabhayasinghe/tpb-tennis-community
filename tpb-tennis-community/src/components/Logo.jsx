@@ -1,6 +1,7 @@
 "use client";
 
 import React, { ReactNode } from "react";
+import { Link } from "react-router-dom";
 const gradientKeyframes = `
 @keyframes gradient {
   0% { background-position: 0% 50%; }
@@ -67,16 +68,16 @@ function GradientText({
 }
 const Logo = () => {
   return (
-    <div className="flex items-center font-sans gap-1.5 p-1">
-      
-      <GradientText
-        className="text-lg font-bold"
-        colors={["#22c55e", "#eab308", "#22c55e"]}
-        
-      >
-        The Perfect Buddy
-      </GradientText>
-    </div>
+    <Link to={"/"}>
+      <div className="flex items-center font-sans gap-1.5 p-1 ">
+        <GradientText
+          className="text-lg font-bold"
+          colors={["#22c55e", "#eab308", "#22c55e"]}
+        >
+          The Perfect Buddy
+        </GradientText>
+      </div>
+    </Link>
   );
 };
 export default Logo;

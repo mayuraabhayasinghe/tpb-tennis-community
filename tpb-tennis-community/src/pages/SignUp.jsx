@@ -5,6 +5,7 @@ import { Navbar } from "../components/Navbar";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../services/createClient";
 import { UserAuth } from "../context/AuthContext";
+import AnimatedLogo from "../components/AnimatedLogo";
 
 const MailIcon = () => (
   <svg
@@ -148,13 +149,14 @@ const GoogleIcon = () => (
   </svg>
 );
 const SignUp = () => {
-  const { session, signUp } = UserAuth();
+  const { signUp } = UserAuth();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [contactNo, setContactNo] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setconfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -172,35 +174,67 @@ const SignUp = () => {
     setChecked(!checked);
   };
 
-  const handleSignUpWithPassword = async function () {
+  // const handleSignUpWithPassword = async function () {
+  //   try {
+  //     // Clear any previous error messages
+  //     setErrorMessage("");
+
+  //     const result = await signUp(email, password);
+
+  //     if (result.success) {
+  //       navigate("/create-profile");
+  //       console.log("Signup successful:", result.data);
+  //     } else if (!result.success) {
+  //       setErrorMessage(result.error);
+  //       console.error("Signup error:", result.error);
+  //       return;
+  //     }
+  //   } catch (err) {
+  //     console.error("Unexpected error during signup:", err);
+  //     setErrorMessage("An unexpected error occurred. Please try again.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const handleSubmission = async (e) => {
+    e.preventDefault();
+    setErrorMessage("");
     try {
-      // Clear any previous error messages
-      setErrorMessage("");
+      setLoading(true);
 
       const result = await signUp(email, password);
-
       if (result.success) {
-        navigate("/create-profile");
         console.log("Signup successful:", result.data);
       } else if (!result.success) {
         setErrorMessage(result.error);
         console.error("Signup error:", result.error);
         return;
       }
-    } catch (err) {
-      console.error("Unexpected error during signup:", err);
-      setErrorMessage("An unexpected error occurred. Please try again.");
+
+      const user = result.data.user;
+
+      //Update profile table
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          first_name: firstName,
+          last_name: lastName,
+          contact_no: contactNo,
+          isProfileComplete: true,
+        })
+        .eq("id", user.id);
+
+      if (profileError) {
+        console.log("Error updating profile: ", profileError.message);
+        setErrorMessage(profileError.message);
+        return;
+      }
+      navigate("/");
+    } catch (error) {
+      console.error("An unexpected error occurred: ", error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleSubmission = async (e) => {
-    e.preventDefault();
-    setErrorMessage("");
-    try {
-    } catch (error) {
-    } finally {
     }
   };
 
@@ -227,9 +261,16 @@ const SignUp = () => {
 
   useEffect(() => {
     const handleValidation = () => {
-      if (email && password && checked) {
+      if (
+        firstName &&
+        lastName &&
+        email &&
+        password &&
+        confirmPassword &&
+        checked
+      ) {
         setValidation(true);
-        console.log(validation);
+        // console.log(validation);
       } else {
         setValidation(false);
       }
@@ -397,9 +438,9 @@ const SignUp = () => {
                     <input
                       id="confirmpassword"
                       type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter your password"
+                      value={confirmPassword}
+                      onChange={(e) => setconfirmPassword(e.target.value)}
+                      placeholder="Confirm your password"
                       className="flex h-10 w-full rounded-md border border-gray-200 focus:border-none dark:border-gray-800 bg-white dark:bg-black px-3 py-2 pl-10 pr-10 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-green-400 dark:focus:ring-gray-300 focus:ring-offset-1 focus:ring-offset-white dark:focus:ring-offset-black disabled:cursor-not-allowed disabled:opacity-50"
                     />
                     <button
