@@ -46,19 +46,19 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Sign in with Google
-  const signInWithGoogle = async () => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-    });
+  // const signInWithGoogle = async () => {
+  //   const { data, error } = await supabase.auth.signInWithOAuth({
+  //     provider: "google",
+  //   });
 
-    if (error) {
-      console.error("Google login error:", error);
-      return { success: false, error: error.message };
-    }
+  //   if (error) {
+  //     console.error("Google login error:", error);
+  //     return { success: false, error: error.message };
+  //   }
 
-    // Supabase will handle redirect → your app’s redirect URL must be set in Dashboard
-    return { success: true, data };
-  };
+  //   // Supabase will handle redirect → your app’s redirect URL must be set in Dashboard
+  //   return { success: true, data };
+  // };
 
   //Sign out
   const signOut = async () => {

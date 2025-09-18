@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Toaster } from 'react-hot-toast';
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 
@@ -13,11 +14,14 @@ import LoadingDemo from "./pages/LoadingDemo";
 import Rankings from "./pages/Rankings";
 import Profiles from "./pages/Profiles";
 // import { AuthDebugPanel } from "./components/AuthDebugPanel";
+import HostAGame from "./pages/HostAGame";
+import Games from "./pages/Games";
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+      <Toaster position='top-right' />
         <Routes>
           {/* Public routes */}
           <Route path="/sign-up" element={<SignUp />} />
@@ -60,7 +64,11 @@ function App() {
 
           {/* OAuth redirect handler */}
           <Route path="/oauth-redirect" element={<OAuthRedirectHandler />} />
+          
+          <Route path="/hostGame" element={<HostAGame/>}/>
+          <Route path="/games" element={<Games/>}/>
         </Routes>
+       
       </AuthProvider>
     </BrowserRouter>
   );
