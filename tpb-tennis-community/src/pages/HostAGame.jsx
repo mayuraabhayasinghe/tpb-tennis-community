@@ -92,9 +92,9 @@ export default function HostAGame() {
     <div className="flex flex-col mt-20">
           
 
-    <div className='bg-[#F8F9FA] w-full h-full min-h-screen flex justify-center items-center'>
+    <div className='bg-[#F8F9FA] w-full h-full min-h-screen flex justify-center items-center px-4 sm:px-6 md:px-0'>
         <div className="flex flex-col space-y-6">
-    <h1 className="text-2xl font-bold ml-2">Host a Tennis Game</h1>
+    <h1 className="text-2xl font-bold">Host a Tennis Game</h1>
 
     <div className='bg-[#FFFFFF] w-full max-w-[750px] min-h-[630px] flex flex-col items-center shadow-lg rounded-lg gap-2 p-6'>
       <form onSubmit={handleSubmit} className='flex flex-col space-y-8 w-full'>
