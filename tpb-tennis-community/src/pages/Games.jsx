@@ -10,13 +10,22 @@ import { FaTrophy } from "react-icons/fa";
 import { GoPeople } from "react-icons/go";
 import { IoIosSearch } from "react-icons/io";
 import { FaPlus } from "react-icons/fa6";
+import {  UserAuth } from '../context/AuthContext.jsx';
 
 
 export default function Games() {
+  const {session} = UserAuth();
+  const userId = session?.user?.id;
+
+  console.log(userId)
+  
+  
   const [games, setGames] = useState([]);
+
   const navigate = useNavigate()
 
   useEffect(() => {
+    
     const fetchGames = async () => {
       const { data, error } = await supabase
         .from('games')
@@ -44,29 +53,32 @@ export default function Games() {
       }
     };
     fetchGames();
-  }, []);
+  }, [session]);
 
-  return (
-    <div className="flex flex-col">
-              <Navbar />
+
+return (
+    <>
+    <Navbar />
+    <div className="flex flex-col mt-20">
+              
     <div className='flex justify-center bg-[#F9FAFB]'>
-    <div className=' min-h-screen w-[1500px] flex flex-col gap-6 p-6'>
-      <div className='flex flex-col relative'>
+    <div className=' min-h-screen w-full md:w-[1500px] flex flex-col gap-6 p-6'>
+      <div className='flex flex-col md:flex-row md:items-center md:justify-between relative'>
       <h1 className='font-bold text-2xl'>Find Tennis Games</h1>
       <p className='text-gray-500'>Discover games in your area and join the fun!</p>
-       <button onClick={()=>{navigate('/hostGame')}} className=' absolute right-1 w-[150px] h-[50px] bg-[#16A34A] rounded-3xl font-semibold text-white cursor-pointer flex items-center justify-center gap-1'><FaPlus  /> Host a Game</button>
+       <button onClick={()=>{navigate('/hostGame')}} className=' mt-4 md:mt-0 w-full md:w-[130px] h-[40px] bg-[#16A34A] rounded-3xl text-sm font-semibold text-white cursor-pointer flex items-center justify-center gap-1'><FaPlus  /> Host a Game</button>
       </div>
 
-      <div className='shadow-sm bg-white rounded-xl p-1.5 flex flex-row gap-2 relative'>
-        <IoIosSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 ml-0.5" />
+      <div className='shadow-sm bg-white rounded-xl p-1 flex flex-row gap-2 relative'>
+        <IoIosSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 ml-0.5" />
         <input
           className="pl-8 w-full bg-[#F9FAFB] border rounded-lg border-gray-300 p-2"
           type="text"
           placeholder="Search by court name or host"
         />
-        <button className='border rounded-lg border-gray-400 flex flex-row items-center justify-center w-[100px] h-[50px] p-2'><LuFilter /> Filter</button>
+        <button className='border rounded-lg border-gray-400 flex flex-row items-center justify-center w-[80px] h-[40px] p-2'><LuFilter /> Filter</button>
       </div>
-      <div className="flex flex-wrap gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {games.map((game) => {
             let borderColor = "";
             let statusLabel = "";
@@ -81,7 +93,7 @@ export default function Games() {
               statusLabel = "EXPIRED";
             }
         return (
-        <div key={game.id} className={`relative border-2 rounded-lg ${borderColor} w-[500px] h-[300px] shadow-md p-4 flex flex-col justify-between`}>
+        <div key={game.id} className={`relative border-2 rounded-lg ${borderColor} shadow-md p-4 flex flex-col justify-between`}>
           {/* Full-width status banner */}
                 {statusLabel && (
                   <span
@@ -92,9 +104,9 @@ export default function Games() {
                   </span>
                 )}
         <div className={`mt-${statusLabel ? "8" : "1"} flex flex-col gap-2`}>
-          <div className='flex flex-row relative justify-between'>
-          <h2 className='font-semibold text-xl'>{game.court_name}</h2>
-          <p className='absolute right-0.5 w-[150px] min-h-[30px] bg-gray-200 text-gray-700 pr-2 flex items-center justify-center rounded-lg'>Ref# TPB {game.reference_number}</p>
+          <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2'>
+          <h2 className='font-semibold text-lg'>{game.court_name}</h2>
+          <p className='bg-gray-200 text-gray-700 px-3 py-1 rounded-lg text-sm sm:text-base text-center'>Ref# TPB {game.reference_number}</p>
           </div>
           <p className='text-gray-500 text-lg gap-2 flex flex-row items-center'>
             <BsCalendar2Date /> {new Date(game.game_date).toLocaleDateString("en-US", {
@@ -116,7 +128,7 @@ export default function Games() {
               hour12: true,
             })}
           </p>
-          <p className='text-gray-500 text-lg gap-2 flex flex-row items-center'><CiLocationOn /> Hosted by {game.profiles?.first_name || "Unknown"}</p>
+          <p className='text-gray-500 text-md gap-2 flex flex-row items-center'><CiLocationOn /> Hosted by {game.profiles?.first_name || "Unknown"}</p>
           <div className="flex justify-between mt-3 items-center">
                 {/* Skill Level */}
                 <div>
@@ -145,7 +157,7 @@ export default function Games() {
 
               {/* Spots left */}
               <div className='flex items-center justify-between mt-2'>
-              <p className="mt-2 text-lg text-green-600 font-semibold flex items-center gap-1">
+              <p className="mt-2 text-md text-green-600 font-semibold flex items-center gap-1">
                <GoPeople /> {game.available_vacancies} spots left
               </p>
               <button className='w-[150px] h-[40px] bg-[#16A34A] rounded-xl font-semibold text-white cursor-pointer'>Request to Join</button>
@@ -159,5 +171,6 @@ export default function Games() {
     </div>
     </div>
     </div>
+    </>
   );
 }
