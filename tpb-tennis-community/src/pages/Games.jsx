@@ -64,8 +64,10 @@ return (
     <div className='flex justify-center bg-[#F9FAFB]'>
     <div className=' min-h-screen w-full md:w-[1500px] flex flex-col gap-6 p-6'>
       <div className='flex flex-col md:flex-row md:items-center md:justify-between relative'>
+        <div className='flex flex-col mt-1'>
       <h1 className='font-bold text-2xl'>Find Tennis Games</h1>
       <p className='text-gray-500'>Discover games in your area and join the fun!</p>
+      </div>
        <button onClick={()=>{navigate('/hostGame')}} className=' mt-4 md:mt-0 w-full md:w-[130px] h-[40px] bg-[#16A34A] rounded-3xl text-sm font-semibold text-white cursor-pointer flex items-center justify-center gap-1'><FaPlus  /> Host a Game</button>
       </div>
 
@@ -160,7 +162,7 @@ return (
               <p className="mt-2 text-md text-green-600 font-semibold flex items-center gap-1">
                <GoPeople /> {game.available_vacancies} spots left
               </p>
-              <button className='w-[150px] h-[40px] bg-[#16A34A] rounded-xl font-semibold text-white cursor-pointer'>Request to Join</button>
+              <button className='p-2 h-[40px] bg-[#16A34A] rounded-xl text-sm text-center font-semibold text-white cursor-pointer'>Request to Join</button>
               </div>
           
         </div>
