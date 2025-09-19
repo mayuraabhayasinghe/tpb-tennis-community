@@ -19,12 +19,27 @@ export default function Games() {
 
   console.log(userId)
   
+  const now = new Date();
   
   const [games, setGames] = useState([]);
+  const [search, setSearch] = useState("");
+
+   const filteredGames = games.filter((game) => {
+    const query = search.toLowerCase();
+    const hostFullName = game.profiles
+    ? `${game.profiles.first_name ?? ""} ${game.profiles.last_name ?? ""}`.trim()
+    : "";
+
+    const gameEndDateTime = new Date(`${game.game_date}T${game.game_end_time}`)
+    return  (
+      gameEndDateTime > now &&(
+      game.court_name.toLowerCase().includes(query) ||
+      hostFullName.toLowerCase().includes(query)
+      )
+    );
+  });
 
   const navigate = useNavigate()
-
-  useEffect(() => {
     
     const fetchGames = async () => {
       const { data, error } = await supabase
@@ -41,7 +56,8 @@ export default function Games() {
           required_skill_level,
           status,
           profiles:host_user_id (
-            first_name
+            first_name,
+            last_name
       
           )
         `);
@@ -52,8 +68,48 @@ export default function Games() {
         setGames(data);
       }
     };
-    fetchGames();
-  }, [session]);
+ 
+
+  async function deleteExpiredGames() {
+  const { data: allGames, error } = await supabase
+    .from("games")
+    .select("id, game_date, game_end_time");
+
+  if (error) {
+    console.error("Error fetching games:", error);
+    return;
+  }
+
+  const now = new Date();
+
+  // Find IDs of expired games
+  const expiredIds = allGames
+    .filter((game) => new Date(`${game.game_date}T${game.game_end_time}`) < now)
+    .map((game) => game.id);
+
+  // Delete expired games if any found
+  if (expiredIds.length > 0) {
+    const { error: deleteError } = await supabase
+      .from("games")
+      .delete()
+      .in("id", expiredIds);
+
+    if (deleteError) {
+      console.error("Error deleting expired games:", deleteError);
+    } else {
+      console.log("Deleted expired games:", expiredIds);
+      fetchGames(); // Refresh the list
+    }
+  }
+}
+
+  useEffect(() => {
+  async function init() {
+    await deleteExpiredGames();
+    await fetchGames();
+  }
+  init();
+}, [session]);
 
 
 return (
@@ -76,12 +132,14 @@ return (
         <input
           className="pl-8 w-full bg-[#F9FAFB] border rounded-lg border-gray-300 p-2"
           type="text"
+          value={search}
           placeholder="Search by court name or host"
+          onChange={(e) => setSearch(e.target.value)}
         />
-        <button className='border rounded-lg border-gray-400 flex flex-row items-center justify-center w-[80px] h-[40px] p-2'><LuFilter /> Filter</button>
+        <button className='border rounded-lg border-gray-400 flex flex-row items-center justify-center w-[80px] h-[40px] p-2 cursor-pointer hover:bg-[#16A34A] hover:text-white'><LuFilter /> Filter</button>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {games.map((game) => {
+      {filteredGames.map((game) => {
             let borderColor = "";
             let statusLabel = "";
 
@@ -130,7 +188,7 @@ return (
               hour12: true,
             })}
           </p>
-          <p className='text-gray-500 text-md gap-2 flex flex-row items-center'><CiLocationOn /> Hosted by {game.profiles?.first_name || "Unknown"}</p>
+          <p className='text-gray-500 text-md gap-2 flex flex-row items-center'><CiLocationOn /> Hosted by{" "} {game.profiles ? `${game.profiles.first_name ?? ""} ${game.profiles.last_name ?? ""}`.trim()|| "Unknown" : "UnKnown"}</p>
           <div className="flex justify-between mt-3 items-center">
                 {/* Skill Level */}
                 <div>
