@@ -18,12 +18,31 @@ export default function Games() {
   const { session } = UserAuth();
   const userId = session?.user?.id;
 
+  const navigate = useNavigate();
+
   const [games, setGames] = useState([]);
+  const [search, setSearch] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [requestLoading, setRequestLoading] = useState(false);
 
-  const navigate = useNavigate();
+
+  const filteredGames = games.filter((game) => {
+    const query = search.toLowerCase();
+    const hostFullName = game.profiles
+      ? `${game.profiles.first_name ?? ""} ${
+          game.profiles.last_name ?? ""
+        }`.trim()
+      : "";
+
+    const gameEndDateTime = new Date(`${game.game_date}T${game.game_end_time}`);
+    return (
+      gameEndDateTime > now &&
+      (game.court_name.toLowerCase().includes(query) ||
+        hostFullName.toLowerCase().includes(query))
+    );
+  });
+
   const handleSendRequest = async (gameId) => {
     setRequestLoading(true);
     console.log(gameId);
@@ -47,11 +66,11 @@ export default function Games() {
       setRequestLoading(false);
     }
   };
-  useEffect(() => {
-    const fetchGames = async () => {
-      setLoading(true);
-      try {
-        const { data, error } = await supabase.from("games").select(`
+
+  const fetchGames = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.from("games").select(`
           id,
           reference_number,
           court_name,
@@ -63,25 +82,67 @@ export default function Games() {
           required_skill_level,
           status,
           profiles:host_user_id (
-            first_name
+            first_name,
+            last_name
       
           )
         `);
 
-        if (error) {
-          console.error(error);
-          toast.error(error.message);
-        } else {
-          setGames(data);
-        }
-      } catch (error) {
-        console.error("An error occured: ", error);
-      } finally {
-        setLoading(false);
+      if (error) {
+        console.error(error);
+        toast.error(error.message);
+      } else {
+        setGames(data);
       }
-    };
-    fetchGames();
-  }, []);
+    } catch (error) {
+      console.error("An error occured: ", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  async function deleteExpiredGames() {
+    const { data: allGames, error } = await supabase
+      .from("games")
+      .select("id, game_date, game_end_time");
+
+    if (error) {
+      console.error("Error fetching games:", error);
+      return;
+    }
+
+    const now = new Date();
+
+    // Find IDs of expired games
+    const expiredIds = allGames
+      .filter(
+        (game) => new Date(`${game.game_date}T${game.game_end_time}`) < now
+      )
+      .map((game) => game.id);
+
+    // Delete expired games if any found
+    if (expiredIds.length > 0) {
+      const { error: deleteError } = await supabase
+        .from("games")
+        .delete()
+        .in("id", expiredIds);
+
+      if (deleteError) {
+        console.error("Error deleting expired games:", deleteError);
+      } else {
+        console.log("Deleted expired games:", expiredIds);
+        fetchGames(); // Refresh the list
+      }
+    }
+  }
+
+  useEffect(() => {
+    async function init() {
+      await deleteExpiredGames();
+      await fetchGames();
+    }
+    init();
+  }, [session]);
 
   return (
     <>
@@ -108,7 +169,9 @@ export default function Games() {
               <IoIosSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 ml-0.5" />
               <input
                 className="pl-8 w-full bg-[#F9FAFB] border rounded-lg border-gray-300 p-2"
+                value={search}
                 type="text"
+                onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by court name or host"
               />
               <button className="border rounded-lg border-gray-400 flex flex-row items-center justify-center w-[80px] h-[40px] p-2">
@@ -122,7 +185,7 @@ export default function Games() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {games.map((game) => {
+                  {filteredGames.map((game) => {
                     let borderColor = "";
                     let statusLabel = "";
 
@@ -198,7 +261,11 @@ export default function Games() {
                           </p>
                           <p className="text-gray-500 text-sm gap-2 flex flex-row items-center">
                             <CiLocationOn /> Hosted by{" "}
-                            {game.profiles?.first_name || "Unknown"}
+                            {game.profiles
+                              ? `${game.profiles.first_name ?? ""} ${
+                                  game.profiles.last_name ?? ""
+                                }`.trim() || "Unknown"
+                              : "UnKnown"}
                           </p>
                           <div className="flex justify-between mt-3 items-center">
                             {/* Skill Level */}

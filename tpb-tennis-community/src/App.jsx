@@ -67,7 +67,7 @@ function App() {
             path="/games"
             element={
               <ProtectedRoutes>
-                <TestGames />
+                <Games />
               </ProtectedRoutes>
             }
           />
