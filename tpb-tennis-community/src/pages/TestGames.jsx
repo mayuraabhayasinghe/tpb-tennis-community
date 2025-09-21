@@ -55,9 +55,9 @@ export default function TestGames() {
       setLoading(true);
       try {
         // Step 1: Fetch all games
-        const { data: gamesData, error: gamesError } = await supabase
-          .from("games")
-          .select(`
+        const { data: gamesData, error: gamesError } = await supabase.from(
+          "games"
+        ).select(`
             id,
             reference_number,
             court_name,
@@ -182,7 +182,7 @@ export default function TestGames() {
                             <h2 className="font-semibold text-lg">
                               {game.court_name}
                             </h2>
-                            <p className="bg-gray-200 text-gray-700 px-3 py-1 rounded-lg font-semibold sm:text-base text-center">
+                            <p className="bg-gradient-to-r from-green-300 to-yellow-200 border border-amber-300 text-gray-800 px-3 py-1 rounded-lg font-semibold sm:text-base text-center">
                               Ref# TPB {game.reference_number}
                             </p>
                           </div>
@@ -255,17 +255,14 @@ export default function TestGames() {
                             </p>
 
                             {alreadyRequested ? (
-                              <button
-                                disabled
-                                className="w-[130px] h-[35px] bg-gray-400 text-sm rounded-xl font-semibold text-white cursor-not-allowed"
-                              >
-                                Requested
+                              <button className="w-[130px] h-[35px] border border-red-300 bg-red-100 hover:bg-red-200 text-sm rounded-xl font-semibold text-black cursor-pointer">
+                                Cancel Request
                               </button>
                             ) : (
                               <button
                                 onClick={() => handleSendRequest(game.id)}
                                 disabled={requestLoading}
-                                className="w-[130px] h-[35px] bg-[#16A34A] text-sm rounded-xl font-semibold text-white cursor-pointer"
+                                className="w-[130px] h-[35px] bg-green-600 hover:bg-green-700 text-sm rounded-xl font-semibold text-white cursor-pointer"
                               >
                                 Request to Join
                               </button>

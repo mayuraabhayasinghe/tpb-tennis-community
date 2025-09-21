@@ -52,7 +52,7 @@ export default function HostAGame() {
     const reference_number = Math.floor(100000 + Math.random() * 900000);
 
     try {
-      const { data, error } = await supabase.from("games").insert([
+      const { error } = await supabase.from("games").insert([
         {
           court_name: formData.court_name,
           game_date: formData.game_date,
@@ -72,7 +72,7 @@ export default function HostAGame() {
         console.error("Error inserting game:", error);
         toast.error("Error inserting game");
       } else {
-        console.log("Game created successfully:", data);
+        console.log("Game created successfully:");
         toast.success("Game created successfully");
         navigate("/games");
       }

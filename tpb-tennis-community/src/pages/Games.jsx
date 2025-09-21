@@ -19,13 +19,13 @@ export default function Games() {
   const userId = session?.user?.id;
 
   const navigate = useNavigate();
+  const now = new Date();
 
   const [games, setGames] = useState([]);
   const [search, setSearch] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [requestLoading, setRequestLoading] = useState(false);
-
 
   const filteredGames = games.filter((game) => {
     const query = search.toLowerCase();
@@ -43,9 +43,14 @@ export default function Games() {
     );
   });
 
-  const handleSendRequest = async (gameId) => {
+  const handleSendRequest = async (gameId, hostId) => {
     setRequestLoading(true);
-    console.log(gameId);
+
+    if (hostId === userId) {
+      toast.error("You cannot join a game you are hosting.");
+      return;
+    }
+
     try {
       const { error } = await supabase.from("game_requests").insert({
         game_id: gameId,
@@ -73,6 +78,7 @@ export default function Games() {
       const { data, error } = await supabase.from("games").select(`
           id,
           reference_number,
+          host_user_id,
           court_name,
           game_date,
           game_start_time,
@@ -305,7 +311,9 @@ export default function Games() {
                               <GoPeople /> {game.available_vacancies} spots left
                             </p>
                             <button
-                              onClick={() => handleSendRequest(game.id)}
+                              onClick={() =>
+                                handleSendRequest(game.id, game.host_user_id)
+                              }
                               className="w-[130px] h-[35px] bg-[#16A34A] text-sm rounded-xl font-semibold text-white cursor-pointer"
                             >
                               Request to Join
