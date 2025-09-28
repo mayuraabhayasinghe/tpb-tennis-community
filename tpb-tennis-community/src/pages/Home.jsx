@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from "react";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
 import { UserAuth } from "../context/AuthContext";
@@ -37,8 +36,9 @@ export const Home = () => {
           </div>
 
           <div className="flex flex-row gap-3 z-10">
-            <button className="bg-white px-4 py-2 text-green-600 mt-5 rounded-3xl cursor-pointer font-bold text-sm transition duration-300 hover:bg-blue-100/80">Join Now</button>
-            <button className="border border-white text-white font-semibold px-4 py-2 mt-5 rounded-3xl cursor-pointer transition duration-300 hover:bg-white/20 hover:text-white">Sign In</button>
+            <button className="bg-white px-4 py-2 text-green-600 mt-5 rounded-3xl cursor-pointer font-bold text-sm transition duration-300 hover:bg-blue-100/80" onClick={()=>{navigate("/sign-up")}}>Join Now</button>
+            <button className="border border-white text-white font-semibold px-4 py-2 mt-5 rounded-3xl cursor-pointer transition duration-300 hover:bg-white/20 hover:text-white"
+            onClick={()=>{navigate("/login")}}>Sign In</button>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center mt-12 px-6">
@@ -153,7 +153,7 @@ export const Home = () => {
             <h1 className="text-white font-bold text-3xl">Ready to Find Your Perfect Tennis Buddy?</h1>
             <p className="text-white text-lg">Join our community today and never miss a chance to play tennis with the
                 <br/>bperfect partner.</p>
-            <button className="border border-white text-green-600 font-semibold px-4 py-2 mt-5 rounded-3xl cursor-pointer transition duration-300 hover:bg-white/20 hover:text-white">Sign Up Now</button>    
+            <button className="border border-white text-green-400 font-semibold px-4 py-2 mt-5 rounded-3xl cursor-pointer transition duration-300 hover:bg-white/20 hover:text-white z-10" onClick={()=>{navigate("/sign-up")}}>Sign Up Now</button>    
 
           </div>
 
