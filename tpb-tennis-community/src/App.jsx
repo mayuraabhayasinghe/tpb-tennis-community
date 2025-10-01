@@ -16,6 +16,8 @@ import Profiles from "./pages/Profiles";
 import HostAGame from "./pages/HostAGame";
 import Games from "./pages/Games";
 import TestGames from "./pages/TestGames";
+import TestGames2 from "./pages/TestGames2";
+import OnBoardingRoutes from "../routes/onBoardingRoutes";
 
 function App() {
   return (
@@ -25,7 +27,14 @@ function App() {
         <Routes>
           {/* Public routes */}
           <Route path="/sign-up" element={<SignUp />} />
-          <Route path="/login" element={<Login />} />
+          <Route
+            path="/login"
+            element={
+              <OnBoardingRoutes>
+                <Login />
+              </OnBoardingRoutes>
+            }
+          />
           <Route path="/" element={<Home />} />
 
           <Route path="/loading-demo" element={<LoadingDemo />} />
@@ -67,7 +76,7 @@ function App() {
             path="/games"
             element={
               <ProtectedRoutes>
-                <TestGames />
+                <TestGames2 />
               </ProtectedRoutes>
             }
           />
