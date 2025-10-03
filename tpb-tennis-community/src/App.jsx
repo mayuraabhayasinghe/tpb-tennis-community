@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from "react-hot-toast";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 
@@ -7,8 +7,7 @@ import { Home } from "./pages/Home";
 import CreateProfile from "./pages/CreateProfile";
 import OAuthRedirectHandler from "./pages/OAuthRedirectHandler";
 import { AuthProvider } from "./context/AuthContext";
-import { ProtectedRoutes } from "../routes/protectedRoutes";
-import OnBoardingRoutes from "../routes/OnBoardingRoutes";
+import { ProtectedRoutes } from "../routes/ProtectedRoutes";
 import { Requests } from "./pages/Requests";
 import LoadingDemo from "./pages/LoadingDemo";
 import Rankings from "./pages/Rankings";
@@ -16,16 +15,26 @@ import Profiles from "./pages/Profiles";
 // import { AuthDebugPanel } from "./components/AuthDebugPanel";
 import HostAGame from "./pages/HostAGame";
 import Games from "./pages/Games";
+import TestGames from "./pages/TestGames";
+import TestGames2 from "./pages/TestGames2";
+import OnBoardingRoutes from "../routes/onBoardingRoutes";
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-      <Toaster position='top-right' />
+        <Toaster position="top-right" />
         <Routes>
           {/* Public routes */}
           <Route path="/sign-up" element={<SignUp />} />
-          <Route path="/login" element={<Login />} />
+          <Route
+            path="/login"
+            element={
+              <OnBoardingRoutes>
+                <Login />
+              </OnBoardingRoutes>
+            }
+          />
           <Route path="/" element={<Home />} />
 
           <Route path="/loading-demo" element={<LoadingDemo />} />
@@ -55,6 +64,22 @@ function App() {
               </ProtectedRoutes>
             }
           />
+          <Route
+            path="/hostGame"
+            element={
+              <ProtectedRoutes>
+                <HostAGame />
+              </ProtectedRoutes>
+            }
+          />
+          <Route
+            path="/games"
+            element={
+              <ProtectedRoutes>
+                <TestGames2 />
+              </ProtectedRoutes>
+            }
+          />
 
           {/* Onboarding protected route */}
           <Route path="/create-profile" element={<CreateProfile />} />
@@ -64,11 +89,7 @@ function App() {
 
           {/* OAuth redirect handler */}
           <Route path="/oauth-redirect" element={<OAuthRedirectHandler />} />
-          
-          <Route path="/hostGame" element={<HostAGame/>}/>
-          <Route path="/games" element={<Games/>}/>
         </Routes>
-       
       </AuthProvider>
     </BrowserRouter>
   );

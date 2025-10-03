@@ -105,7 +105,7 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   const navigate = useNavigate();
-  const { signIn } = UserAuth();
+  const { signIn, loading: contextLoading } = UserAuth();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -117,7 +117,7 @@ const Login = () => {
     setErrorMessage("");
     try {
       const result = await signIn(email, password);
-      if (result.success) {
+      if (result.success && !contextLoading) {
         navigate("/");
       } else if (!result.success) {
         console.error("Login error:", result.error);

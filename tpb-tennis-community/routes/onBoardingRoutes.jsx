@@ -3,22 +3,14 @@ import { UserAuth } from "../src/context/AuthContext";
 import { Navigate } from "react-router-dom";
 
 export default function OnBoardingRoutes(props) {
-  const { session, profile } = UserAuth();
-  
-
-  const [Loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Give auth system time to initialize
-    const timer = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (!session) {
-    return <Navigate to="/login" />;
+  const { session, loading } = UserAuth();
+  if (loading) {
+    return <div> Loading ...</div>;
   }
-  if (session && profile) {
+
+  if (session) {
     return <Navigate to="/" />;
   }
+
   return props.children;
 }
