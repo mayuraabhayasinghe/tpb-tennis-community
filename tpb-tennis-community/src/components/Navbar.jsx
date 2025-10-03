@@ -1,4 +1,4 @@
-import React, {useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { AuthButtonDesktop } from "./AuthButtonDesktop";
 import { AuthButtonMobile } from "./AuthButtonMobile";
@@ -11,14 +11,16 @@ export const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50">
       <div className="w-full px-3.5 lg:px-5 py-1.5 md:py-3 flex items-center justify-between bg-white/10 backdrop-blur-md border-b border-white/20 ">
-        <div className="flex items-center gap-1.5">
-          <div className="text-yellow-300 text-sm lg:text-lg font-bold px-2.5 py-1 rounded-sm bg-gradient-to-tr from-black via-gray-600 to-black shadow-sm ">
-            TPB
+        <Link to="/">
+          <div className="flex items-center gap-1.5">
+            <div className="text-yellow-300 text-sm lg:text-lg font-bold px-2.5 py-1 rounded-sm bg-gradient-to-tr from-black via-gray-600 to-black shadow-sm ">
+              TPB
+            </div>
+            <span className="font-sans font-medium text-sm lg:text-lg">
+              The Perfect Buddy
+            </span>
           </div>
-          <span className="font-sans font-medium text-sm lg:text-lg">
-            The Perfect Buddy
-          </span>
-        </div>
+        </Link>
 
         {/* dekstop menu links */}
         <div className="hidden md:flex md:display gap-6 lg:gap-10 font-sans text-sm lg:text-[15px]">
