@@ -26,7 +26,7 @@ export const Home = () => {
   return (
     <div className="flex flex-col">
       <Navbar />
-      <div className="text-center">
+      <div className="text-center mt-15">
         <div
           className="h-[600px] flex flex-col items-center justify-center bg-center bg-cover relative"
           style={{ backgroundImage: `url(${heroBg})` }}

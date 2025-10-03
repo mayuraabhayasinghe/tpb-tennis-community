@@ -30,11 +30,11 @@ export const Navbar = () => {
           <Link className="hover:text-blue-500" to="/requests">
             Requests
           </Link>
-          <Link className="hover:text-blue-500" to="/rankings">
-            Rankings
-          </Link>
           <Link className="hover:text-blue-500" to="/profiles">
             Profiles
+          </Link>
+          <Link className="hover:text-blue-500" to="/rankings">
+            Rankings
           </Link>
         </div>
         {/* dekstop login and signup button */}
@@ -118,12 +118,13 @@ export const Navbar = () => {
         <Link className="px-3 transition-colors duration-200" to="/requests">
           Requests
         </Link>
-        <Link className="px-3 transition-colors duration-200" to="/rankings">
-          Rankings
-        </Link>
         <Link className="px-3 transition-colors duration-200" to="/profiles">
           Profiles
         </Link>
+        <Link className="px-3 transition-colors duration-200" to="/rankings">
+          Rankings
+        </Link>
+        
         <AuthButtonMobile />
       </div>
     </nav>
