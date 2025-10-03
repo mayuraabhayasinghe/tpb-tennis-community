@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 
 export const AuthButtonMobile = () => {
   const { session, signOut } = UserAuth();
+  const userId = session?.user?.id;
 
   const [loading, setLoading] = useState(false);
 
@@ -24,7 +25,7 @@ export const AuthButtonMobile = () => {
         <div className="flex flex-col gap-5">
           <Link
             className="hover:text-green-500 px-3 py-1 text-center rounded-xl border-1 border-green-600 font-sans font-medium transition-colors duration-200"
-            to="/profile"
+            to={`/profile/${userId}`}
           >
             Profile
           </Link>
