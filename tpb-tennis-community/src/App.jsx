@@ -18,6 +18,7 @@ import Games from "./pages/Games";
 import TestGames from "./pages/TestGames";
 import TestGames2 from "./pages/TestGames2";
 import OnBoardingRoutes from "../routes/onBoardingRoutes";
+import ProfileById from "./pages/ProfileById";
 
 function App() {
   return (
@@ -48,6 +49,7 @@ function App() {
               </ProtectedRoutes>
             }
           />
+
           <Route
             path="/rankings"
             element={
@@ -56,6 +58,7 @@ function App() {
               </ProtectedRoutes>
             }
           />
+
           <Route
             path="/profiles"
             element={
@@ -64,6 +67,7 @@ function App() {
               </ProtectedRoutes>
             }
           />
+
           <Route
             path="/profile"
             element={
@@ -72,6 +76,16 @@ function App() {
               </ProtectedRoutes>
             }
           />
+
+          <Route
+            path="/profile/:id"
+            element={
+              <ProtectedRoutes>
+                <ProfileById />
+              </ProtectedRoutes>
+            }
+          />
+
           <Route
             path="/hostGame"
             element={
@@ -80,6 +94,7 @@ function App() {
               </ProtectedRoutes>
             }
           />
+
           <Route
             path="/games"
             element={
