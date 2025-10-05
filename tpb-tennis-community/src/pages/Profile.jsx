@@ -59,9 +59,18 @@ const Profile = () => {
 
       console.log("Data fetched: ", data);
 
+      const { count: gameCount, error: gameCountError } = await supabase
+        .from("games")
+        .select("*", { count: "exact", head: true })
+        .eq("host_user_id", id);
+      if (gameCountError) throw gameCountError;
+
       // If data is an array, take the first element
       if (data && Array.isArray(data) && data.length > 0) {
-        setUserData(data[0]);
+        setUserData({
+          ...data[0],
+          game_count: gameCount,
+        });
 
         // Initialize edit data with current values
         setEditData({
@@ -341,7 +350,7 @@ const Profile = () => {
   const InfoSection = ({ value, className }) => {
     return (
       <div className={`${className}`}>
-        <p className="font-sans text-gray-900">{value || ""}</p>
+        <p className="font-sans text-black">{value || ""}</p>
       </div>
     );
   };
@@ -411,7 +420,7 @@ const Profile = () => {
                             </>
                           )}
                         </h1>
-                        {userData && userData.gamesHosted > 0 && (
+                        {userData && userData.game_count > 0 && (
                           <span className="hidden md:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -440,7 +449,7 @@ const Profile = () => {
 
                 {/* rating and in mobile rating with active status */}
                 <div className="flex mt-2 mb-3 items-center gap-8">
-                  {userData?.gamesHosted > 0 && (
+                  {userData?.game_count > 0 && (
                     <span className="inline-flex md:hidden items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -497,9 +506,11 @@ const Profile = () => {
                 {userData?.city && (
                   <div className="flex gap-3 text-sm md:text-[16px]">
                     <span>From:</span>
-                    <b>
-                      <InfoSection className={""} value={userData.city} />
-                    </b>
+
+                    <InfoSection
+                      className={"font-semibold"}
+                      value={userData.city}
+                    />
                   </div>
                 )}
 
@@ -507,9 +518,11 @@ const Profile = () => {
                 {userData?.profession && (
                   <div className="flex gap-3 text-sm md:text-[16px]">
                     <span>Work as a:</span>
-                    <b>
-                      <InfoSection className={""} value={userData.profession} />
-                    </b>
+
+                    <InfoSection
+                      className={"font-semibold"}
+                      value={userData.profession}
+                    />
                   </div>
                 )}
 
@@ -517,12 +530,10 @@ const Profile = () => {
                 {userData?.skill_level && (
                   <div className="flex gap-3 text-sm md:text-[16px]">
                     Skill Level:
-                    <b>
-                      <InfoSection
-                        className={""}
-                        value={userData.skill_level}
-                      />
-                    </b>
+                    <InfoSection
+                      className={"font-semibold"}
+                      value={userData.skill_level}
+                    />
                   </div>
                 )}
 
@@ -540,8 +551,8 @@ const Profile = () => {
                 <div className="flex gap-3 items-start text-sm md:text-[16px]">
                   <p className="font-sans text-black">Total Games Hosted:</p>
 
-                  <span className="font-bold">
-                    {userData?.gamesHosted || 0}
+                  <span className="font-semibold">
+                    {userData?.game_count || 0}
                   </span>
                 </div>
               </div>
