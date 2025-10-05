@@ -12,7 +12,7 @@ import { Requests } from "./pages/Requests";
 import LoadingDemo from "./pages/LoadingDemo";
 import Rankings from "./pages/Rankings";
 import Profiles from "./pages/Profiles";
-// import { AuthDebugPanel } from "./components/AuthDebugPanel";
+import Profile from "./pages/Profile";
 import HostAGame from "./pages/HostAGame";
 import Games from "./pages/Games";
 import TestGames from "./pages/TestGames";
@@ -61,6 +61,14 @@ function App() {
             element={
               <ProtectedRoutes>
                 <Profiles />
+              </ProtectedRoutes>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoutes>
+                <Profile />
               </ProtectedRoutes>
             }
           />

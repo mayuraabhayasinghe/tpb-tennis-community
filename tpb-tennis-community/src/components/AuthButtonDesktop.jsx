@@ -25,7 +25,7 @@ export const AuthButtonDesktop = () => {
         <div className="hidden md:display md:flex items-center gap-2">
           <Link
             className="hover:text-green-500 w-[85px] px-3 py-1 text-center rounded-xl border-1 border-green-600 font-sans font-medium transition-colors duration-200"
-            to="/profile"
+            to={"/profile"}
           >
             Profile
           </Link>
@@ -59,7 +59,6 @@ export const AuthButtonDesktop = () => {
               "Log out"
             )}
           </Button>
-          
         </div>
       ) : (
         <div className="hidden md:flex md:display items-center gap-2">

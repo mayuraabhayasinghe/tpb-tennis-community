@@ -22,14 +22,10 @@ import { supabase } from "../services/createClient";
 import { useNavigate } from "react-router-dom";
 
 const CreateProfile = ({ onImageUpload, className = "" }) => {
-  //Getting user's id to put into profile table's id column
-  // const { session, profile, fetchProfile } = UserAuth();
+  
   const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
-  // console.log(profile);
-  // console.log(session);
 
   // set userId when session is available
   useEffect(() => {
