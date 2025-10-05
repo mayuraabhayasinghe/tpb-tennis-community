@@ -28,7 +28,8 @@ const defaultUserData = {
 };
 
 const Profile = () => {
-  const { id } = useParams();
+  const { session } = UserAuth();
+  const id = session?.user?.id;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editData, setEditData] = useState({});
@@ -99,12 +100,22 @@ const Profile = () => {
   // Function to handle file selection
   const onSelectFile = (e) => {
     if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+
+      // Store the original file type in a data attribute to remember it
       const reader = new FileReader();
       reader.addEventListener("load", () => {
-        setImgSrc(reader.result.toString() || "");
-        setCrop(undefined); // Reset crop when loading a new image
+        const result = reader.result.toString() || "";
+        // Store the file type as a custom data attribute in the image element
+        setImgSrc(result);
+
+        // Log the file type for debugging
+        console.log("Selected image type:", file.type);
+
+        // Reset crop when loading a new image
+        setCrop(undefined);
       });
-      reader.readAsDataURL(e.target.files[0]);
+      reader.readAsDataURL(file);
     }
   };
 
@@ -177,11 +188,8 @@ const Profile = () => {
           const croppedImageUrl = URL.createObjectURL(blob);
           setCroppedImage(croppedImageUrl);
 
-          // Update the editData with the new image URL
-          //   setEditData((prev) => ({
-          //     ...prev,
-          //     profileImage: croppedImageUrl,
-          //   }));
+          // Do NOT set blob URL in editData - this will be handled during submission
+          // when we get the proper Supabase URL
 
           resolve(croppedImageUrl);
         },
@@ -193,53 +201,39 @@ const Profile = () => {
 
   //convert croppedImage's value(Blob URL) to a file
   const convertBlopUrlToFile = async (blobUrl, fileName = "profile.jpg") => {
-    //Fetch blob data from the URL
-    const response = await fetch(blobUrl);
-    const blob = await response.blob();
+    try {
+      //Fetch blob data from the URL
+      const response = await fetch(blobUrl);
+      const blob = await response.blob();
 
-    //Create a File object from the blob
-    const file = new File([blob], fileName, { type: blob.type });
-    return file;
+      // Determine file extension based on MIME type
+      let extension = "jpg"; // Default
+      if (blob.type) {
+        const mimeType = blob.type.split("/");
+        if (mimeType.length > 1) {
+          extension = mimeType[1] === "jpeg" ? "jpg" : mimeType[1];
+        }
+      }
+
+      //Create a File object from the blob with proper extension
+      const fileNameWithExt = `profile.${extension}`;
+      const file = new File([blob], fileNameWithExt, { type: blob.type });
+
+      console.log("File created:", file.name, file.type, file.size);
+      return { file, extension };
+    } catch (error) {
+      console.error("Error converting blob URL to file:", error);
+      throw error;
+    }
   };
 
   // Function to handle the save button
-  const handleCropAndSaveClick = async () => {
-    setImageUploading(true);
-    try {
-      // Generate the cropped image and wait for it to complete
-      await generateCroppedImage();
+  const handleSaveClick = async () => {
+    // Generate the cropped image and wait for it to complete
+    await generateCroppedImage();
 
-      // Hide the cropping canvas after applying the crop
-      setImgSrc("");
-
-      if (croppedImage && croppedImage !== userData.profileImage) {
-        const file = await convertBlopUrlToFile();
-        const { data: storageData, error: storageError } =
-          await supabase.storage
-            .from("avatars")
-            .upload(`profile_pictures/${id}.jpg`, file, {
-              upsert: true, // overwrite if exists
-            });
-        if (storageError) throw storageError;
-
-        const { data } = supabase.storage
-          .from("avatar")
-          .getPublicUrl(`profile_pictures/${id}.jpg`);
-
-        setUserData((prev) => ({
-          ...prev,
-          avatar_url: data.publicUrl,
-        }));
-
-        setIsModalOpen(false);
-        toast.success("Image was uploaded successfully.");
-      }
-    } catch (error) {
-      console.error("Error occurred:", error.message);
-      toast.error("Failed to upload the image.");
-    } finally {
-      setImageUploading(false);
-    }
+    // Hide the cropping canvas after applying the crop
+    setImgSrc("");
   };
 
   // Handle profile update
@@ -247,27 +241,80 @@ const Profile = () => {
     setLoading(true);
     try {
       const updates = {};
+      const skipFields = ["avatar_url"]; // Fields to skip in the initial comparison
 
+      // First, collect all non-image updates
       Object.keys(editData).forEach((key) => {
-        if (editData[key] !== userData[key]) {
+        // Skip blob URLs and only process regular fields
+        if (!skipFields.includes(key) && editData[key] !== userData[key]) {
           updates[key] = editData[key];
         }
       });
 
-      //If nothing changed
+      // Handling profile picture uploading
+      if (croppedImage && croppedImage !== userData.avatar_url) {
+        try {
+          setImageUploading(true);
+
+          // Convert the cropped image to a file
+          const { file, extension } = await convertBlopUrlToFile(croppedImage);
+
+          const filename = `profile_pictures/${id}.${extension}`;
+
+          // Upload file to the avatar bucket
+          const { data: storageData, error: storageError } =
+            await supabase.storage.from("avatar").upload(filename, file, {
+              contentType: file.type, // This ensures the server knows the correct type
+              upsert: true, // overwrite if exists
+            });
+
+          if (storageError) {
+            console.error("Storage upload error:", storageError);
+            throw storageError;
+          }
+
+          console.log("Upload successful:", storageData);
+
+          // Get public URL of saved file with cache busting
+          const baseUrl = supabase.storage.from("avatar").getPublicUrl(filename)
+            .data.publicUrl;
+
+          // Add a timestamp query parameter to prevent browser caching
+          const publicUrl = `${baseUrl}?t=${new Date().getTime()}`;
+
+          console.log("Public URL generated with cache busting:", publicUrl);
+
+          // Add the Supabase URL to updates (not the blob URL)
+          updates.avatar_url = publicUrl;
+        } catch (error) {
+          console.error("Error during image upload:", error);
+          toast.error("Failed to upload profile image: " + error.message);
+          // Continue with other updates even if image upload fails
+        } finally {
+          setImageUploading(false);
+        }
+      }
+
+      // If nothing changed
       if (Object.keys(updates).length === 0) {
         console.log("No changes detected.");
         setIsModalOpen(false);
         return;
       }
 
-      //Send updates to the Supabase
+      console.log("Sending updates to Supabase:", updates);
+
+      // Send updates to the Supabase
       const { data, error } = await supabase
         .from("profiles")
         .update(updates)
         .eq("id", id) // Using id from useParams
         .select();
-      if (error) throw error;
+
+      if (error) {
+        console.error("Supabase update error:", error);
+        throw error;
+      }
 
       // Update the local state with edited data
       setUserData((prev) => ({
@@ -306,13 +353,6 @@ const Profile = () => {
         <div className="max-w-3xl mx-auto px-4 py-6">
           {/* Profile Card */}
           <div className="bg-white rounded-lg shadow-lg ">
-            {/* Error display */}
-            {error && (
-              <div className="bg-red-50 text-red-500 p-4 rounded-md mb-4">
-                {error}
-              </div>
-            )}
-
             {/* Loading indicator */}
             {loading && (
               <div className="text-center py-4">
@@ -652,7 +692,7 @@ const Profile = () => {
                   <button
                     type="button"
                     className="px-3 py-1.5 sm:px-4 sm:py-2 text-sm bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    onClick={handleCropAndSaveClick}
+                    onClick={handleSaveClick}
                   >
                     Apply Crop and Save
                   </button>

@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 
 export const AuthButtonDesktop = () => {
   const { session, signOut } = UserAuth();
-  const userId = session?.user?.id;
 
   const [loading, setLoading] = useState(false);
 
@@ -26,7 +25,7 @@ export const AuthButtonDesktop = () => {
         <div className="hidden md:display md:flex items-center gap-2">
           <Link
             className="hover:text-green-500 w-[85px] px-3 py-1 text-center rounded-xl border-1 border-green-600 font-sans font-medium transition-colors duration-200"
-            to={`/profile/${userId}`}
+            to={"/profile"}
           >
             Profile
           </Link>
