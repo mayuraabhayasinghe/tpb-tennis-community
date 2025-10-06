@@ -2,23 +2,19 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
-
 import { Home } from "./pages/Home";
 import CreateProfile from "./pages/CreateProfile";
 import OAuthRedirectHandler from "./pages/OAuthRedirectHandler";
 import { AuthProvider } from "./context/AuthContext";
-import { ProtectedRoutes } from "../routes/ProtectedRoutes";
 import { Requests } from "./pages/Requests";
 import LoadingDemo from "./pages/LoadingDemo";
 import Rankings from "./pages/Rankings";
 import Profiles from "./pages/Profiles";
 import Profile from "./pages/Profile";
 import HostAGame from "./pages/HostAGame";
-import Games from "./pages/Games";
-import TestGames from "./pages/TestGames";
 import TestGames2 from "./pages/TestGames2";
-import OnBoardingRoutes from "../routes/onBoardingRoutes";
-import ProfileById from "./pages/ProfileById";
+import OnBoardingRoutes from "../routes/OnBoardingRoutes";
+import ProtectedRoutes from "../routes/ProtectedRoutes";
 
 function App() {
   return (
