@@ -11,6 +11,7 @@ import LoadingDemo from "./pages/LoadingDemo";
 import Rankings from "./pages/Rankings";
 import Profiles from "./pages/Profiles";
 import Profile from "./pages/Profile";
+import ProfileById from "./pages/ProfileById";
 import HostAGame from "./pages/HostAGame";
 import TestGames2 from "./pages/TestGames2";
 import OnBoardingRoutes from "../routes/OnBoardingRoutes";
