@@ -45,6 +45,7 @@ function App() {
               </ProtectedRoutes>
             }
           />
+
           <Route
             path="/rankings"
             element={
@@ -53,6 +54,7 @@ function App() {
               </ProtectedRoutes>
             }
           />
+
           <Route
             path="/profiles"
             element={
@@ -61,6 +63,7 @@ function App() {
               </ProtectedRoutes>
             }
           />
+
           <Route
             path="/profile"
             element={
@@ -69,6 +72,16 @@ function App() {
               </ProtectedRoutes>
             }
           />
+
+          <Route
+            path="/profile/:id"
+            element={
+              <ProtectedRoutes>
+                <ProfileById />
+              </ProtectedRoutes>
+            }
+          />
+
           <Route
             path="/hostGame"
             element={
@@ -77,6 +90,7 @@ function App() {
               </ProtectedRoutes>
             }
           />
+
           <Route
             path="/games"
             element={

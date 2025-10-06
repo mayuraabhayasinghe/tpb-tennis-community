@@ -359,7 +359,7 @@ const Profile = () => {
     <>
       <Navbar />
       <div className="pt-8 md:pt-20 min-h-screen bg-gray-50">
-        <div className="max-w-3xl mx-auto px-4 py-6">
+        <div className="max-w-3xl mx-auto px-4 py-10">
           {/* Profile Card */}
           <div className="bg-white rounded-lg shadow-lg ">
             {/* Loading indicator */}
