@@ -1,20 +1,21 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import SignUp from "./pages/SignUp";
-import Login from "./pages/Login";
-import { Home } from "./pages/Home";
-import CreateProfile from "./pages/CreateProfile";
-import OAuthRedirectHandler from "./pages/OAuthRedirectHandler";
-import { AuthProvider } from "./context/AuthContext";
-import { Requests } from "./pages/Requests";
-import LoadingDemo from "./pages/LoadingDemo";
-import Rankings from "./pages/Rankings";
-import Profiles from "./pages/Profiles";
-import Profile from "./pages/Profile";
-import HostAGame from "./pages/HostAGame";
-import TestGames2 from "./pages/TestGames2";
-import OnBoardingRoutes from "../routes/OnBoardingRoutes";
-import ProtectedRoutes from "../routes/ProtectedRoutes";
+import SignUp from "./pages/SignUp.jsx";
+import Login from "./pages/Login.jsx";
+import { Home } from "./pages/Home.jsx";
+import CreateProfile from "./pages/CreateProfile.jsx";
+import OAuthRedirectHandler from "./pages/OAuthRedirectHandler.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx";
+import { Requests } from "./pages/Requests.jsx";
+import LoadingDemo from "./pages/LoadingDemo.jsx";
+import Rankings from "./pages/Rankings.jsx";
+import Profiles from "./pages/Profiles.jsx";
+import Profile from "./pages/Profile.jsx";
+import ProfileById from "./pages/ProfileById.jsx";
+import HostAGame from "./pages/HostAGame.jsx";
+import TestGames2 from "./pages/TestGames2.jsx";
+import OnBoardingRoutes from "../routes/OnBoardingRoutes.jsx";
+import ProtectedRoutes from "../routes/ProtectedRoutes.jsx";
 
 function App() {
   return (
