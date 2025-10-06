@@ -187,7 +187,7 @@ export const Home = () => {
         </div>
 
         <div className="h-[300px] flex flex-col items-center justify-center bg-gradient-to-r from-green-400 to-yellow-400 mt-10 relative">
-          <div className="absolute inset-0 bg-black/40"></div>
+          <div className="absolute inset-0"></div>
           <div className="space-y-2.5 z-10">
             <h1 className="text-white font-bold text-3xl">
               Ready to Find Your Perfect Tennis Buddy?
