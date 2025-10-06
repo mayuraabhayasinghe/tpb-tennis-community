@@ -14,8 +14,8 @@ import Profile from "./pages/Profile.jsx";
 import ProfileById from "./pages/ProfileById.jsx";
 import HostAGame from "./pages/HostAGame.jsx";
 import TestGames2 from "./pages/TestGames2.jsx";
-import OnBoardingRoutes from "../routes/OnBoardingRoutes.jsx";
-import ProtectedRoutes from "../routes/ProtectedRoutes.jsx";
+import OnBoardingRoutes from "../routes/onBoardingRoutes.jsx";
+import ProtectedRoutes from "../routes/protectedRoutes.jsx";
 
 function App() {
   return (
