@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { FaCheckCircle } from "react-icons/fa";
 import { MdOutlineAccessTimeFilled } from "react-icons/md";
 import { IoPeopleCircle } from "react-icons/io5";
+import { HowItWorksZigZagClean } from "../components/ui/HowItWorksZigZagClean";
 
 export const Home = () => {
   // const { session } = UserAuth();
@@ -185,6 +186,8 @@ export const Home = () => {
             </div>
           </div>
         </div>
+
+        <HowItWorksZigZagClean/>
 
         <div className="h-[300px] flex flex-col items-center justify-center bg-gradient-to-r from-green-400 to-yellow-400 mt-10 relative">
           <div className="absolute inset-0 bg-black/40"></div>
