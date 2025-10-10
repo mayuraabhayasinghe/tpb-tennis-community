@@ -3,6 +3,7 @@ import { Footer } from "../components/Footer";
 import { UserAuth } from "../context/AuthContext";
 import { TbNumber1Small } from "react-icons/tb";
 import heroBg from "../asset/bgPic1.jpg";
+import bottom from "../asset/wilson-2259352_1280.jpg";
 import Games from "../asset/games.jpeg";
 import Ranking from "../asset/rankings.jpg";
 import requests from "../asset/request.jpg";
@@ -11,16 +12,25 @@ import { FaCheckCircle } from "react-icons/fa";
 import { MdOutlineAccessTimeFilled } from "react-icons/md";
 import { IoPeopleCircle } from "react-icons/io5";
 import { HowItWorksZigZagClean } from "../components/ui/HowItWorksZigZagClean";
+import { WhyChooseTPB } from "../components/ui/WhyChooseTPB";
+import { useState } from "react";
+import { Button } from "../components/ui/button";
 
 export const Home = () => {
-  // const { session } = UserAuth();
-  // const [user, setUser] = useState(null);
-  // useEffect(() => {
-  //   if (!session) {
-  //     setUser(null);
-  //   }
-  //   setUser(session.user);
-  // }, [session]);
+  const { session, signOut } = UserAuth();
+  
+    const [loading, setLoading] = useState(false);
+  
+    const handleSignOut = async () => {
+      try {
+        setLoading(true);
+        await signOut();
+      } catch (error) {
+        console.error("Unexpected error occured at log out: ", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
   const navigate = useNavigate();
 
@@ -33,7 +43,7 @@ export const Home = () => {
           style={{ backgroundImage: `url(${heroBg})` }}
         >
           <div className="absolute inset-0 bg-black/40"></div>
-          <div className="text-white text-center z-10">
+          <div className="text-white text-center z-10 ">
             <h1 className="font-bold text-3xl">
               Find Your Perfect Tennis Buddy
             </h1>
@@ -41,30 +51,51 @@ export const Home = () => {
               Connect with tennis players in your area, join games, or host your
               own matches.
             </p>
-          </div>
-
+       <div className="flex justify-center items-center mt-10">
+        {/* Conditional Buttons */}
           <div className="flex flex-row gap-3 z-10">
-            <button
-              className="bg-white px-4 py-2 text-green-600 mt-5 rounded-3xl cursor-pointer font-bold text-sm transition duration-300 hover:bg-blue-100/80"
-              onClick={() => {
-                navigate("/sign-up");
-              }}
-            >
-              Join Now
-            </button>
-            <button
-              className="border border-white text-white font-semibold px-4 py-2 mt-5 rounded-3xl cursor-pointer transition duration-300 hover:bg-white/20 hover:text-white"
-              onClick={() => {
-                navigate("/login");
-              }}
-            >
-              Sign In
-            </button>
+            {session ? (
+              <>
+                {/* When logged in */}
+                <button
+                  className="bg-white px-3 py-1.5 w-[100px] text-green-600 mt-5 rounded-3xl cursor-pointer font-bold text-sm transition duration-300 hover:bg-blue-100/80"
+                  onClick={() => navigate("/profile")}
+                >
+                  Profile
+                </button>
+                <button
+                  className="border border-white text-white font-semibold px-3 py-1.5 w-[100px] mt-5 rounded-3xl cursor-pointer transition duration-300 hover:bg-white/20 hover:text-white"
+                  onClick={handleSignOut}
+                  disabled={loading}
+                >
+                  {loading ? "Logging out..." : "Logout"}
+                </button>
+              </>
+            ) : (
+              <>
+                {/* When NOT logged in */}
+                <button
+                  className="bg-white px-3 py-1.5 w-[100px] text-green-600 mt-5 rounded-3xl cursor-pointer font-bold text-sm transition duration-300 hover:bg-blue-100/80"
+                  onClick={() => navigate("/sign-up")}
+                >
+                  Join Now
+                </button>
+                <button
+                  className="border border-white text-white font-semibold px-3 py-1.5 w-[100px] mt-5 rounded-3xl cursor-pointer transition duration-300 hover:bg-white/20 hover:text-white"
+                  onClick={() => navigate("/login")}
+                >
+                  Sign In
+                </button>
+              </>
+            )}
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center mt-12 px-6">
+       </div> 
+
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 justify-items-center mt-12 px-17">
           <div
-            className="relative w-95 h-80 rounded-2xl overflow-hidden shadow-lg group  cursor-pointer"
+            className="relative w-90 h-100 rounded-2xl overflow-hidden shadow-lg group  cursor-pointer"
             onClick={() => {
               navigate("/games");
             }}
@@ -90,7 +121,7 @@ export const Home = () => {
           </div>
 
           <div
-            className="relative w-95 h-80 rounded-2xl overflow-hidden shadow-lg group cursor-pointer transform transition duration-300 hover:shadow-2xl hover:-translate-y-1"
+            className="relative w-90 h-100 rounded-2xl overflow-hidden shadow-lg group cursor-pointer transform transition duration-300 hover:shadow-2xl hover:-translate-y-1"
             onClick={() => navigate("/requests")}
           >
             <img
@@ -113,7 +144,7 @@ export const Home = () => {
           </div>
 
           <div
-            className="relative  w-95 h-80 rounded-2xl overflow-hidden shadow-lg group cursor-pointer"
+            className="relative w-90 h-100 rounded-2xl overflow-hidden shadow-lg group cursor-pointer"
             onClick={() => {
               navigate("/rankings");
             }}
@@ -136,81 +167,37 @@ export const Home = () => {
           </div>
         </div>
 
-        <div className="flex flex-col items-center justify-center text-center mt-10">
-          <h1 className="font-bold text-2xl ">Why Choose The Perfect Buddy</h1>
-
-          <div className="m-5 grid grid-cols-1 md:grid-cols-2 gap-10 text-left">
-            <div className="flex flex-row items-center gap-2">
-              <FaCheckCircle className="text-yellow-400 text-3xl" />
-              <div>
-                <h2 className="font-semibold text-lg">
-                  Find Players at Your Level
-                </h2>
-                <p className="text-gray-600">
-                  Our skill-matching system ensures you play with partners at
-                  your level.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-row items-center gap-2">
-              <MdOutlineAccessTimeFilled className="text-green-400 text-4xl" />
-              <div>
-                <h2 className="font-semibold text-lg">Convenient Scheduling</h2>
-                <p className="text-gray-600">
-                  Easily find games that fit your schedule or create your own.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-row items-center gap-2">
-              <IoPeopleCircle className="text-yellow-400 text-4xl" />
-              <div>
-                <h2 className="font-semibold text-lg">Trusted Community</h2>
-                <p className="text-gray-600">
-                  Our rating system helps you find reliable and friendly tennis
-                  partners.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-row items-center gap-2">
-              <FaCheckCircle className="text-green-400 text-3xl" />
-              <div>
-                <h2 className="font-semibold text-lg">Safe and Secure</h2>
-                <p className="text-gray-600">
-                  Verified profiles and secure messaging to ensure a safe
-                  experience.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <WhyChooseTPB />
 
         <HowItWorksZigZagClean/>
 
-        <div className="h-[300px] flex flex-col items-center justify-center bg-gradient-to-r from-green-400 to-yellow-400 mt-10 relative">
+        <div
+          className="h-[300px] flex flex-col items-center justify-center mt-10 relative bg-center bg-cover"
+          style={{ backgroundImage: `url(${bottom})` }}
+        >
+          {/* Semi-transparent overlay */}
           <div className="absolute inset-0 bg-black/40"></div>
-          <div className="space-y-2.5 z-10">
+
+          <div className="space-y-2.5 z-10 text-center">
             <h1 className="text-white font-bold text-3xl">
               Ready to Find Your Perfect Tennis Buddy?
             </h1>
             <p className="text-white text-lg">
-              Join our community today and never miss a chance to play tennis
-              with the
+              Join our community today and never miss a chance to play tennis with the
               <br />
-              bperfect partner.
+              perfect partner.
             </p>
-            <button
-              className="border border-white text-green-400 font-semibold px-4 py-2 mt-5 rounded-3xl cursor-pointer transition duration-300 hover:bg-white/20 hover:text-white z-10"
+            {session ? ("") :(<button
+              className="border border-white text-white font-semibold px-4 py-2 mt-5 rounded-3xl cursor-pointer transition duration-300 hover:bg-white/20 hover:text-white"
               onClick={() => {
                 navigate("/sign-up");
               }}
             >
               Sign Up Now
-            </button>
+            </button>)}
           </div>
         </div>
+
       </div>
       <Footer />
     </div>

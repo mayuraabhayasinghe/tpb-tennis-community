@@ -14,77 +14,32 @@ import {
 
 export const HowItWorksZigZagClean = () => {
   const controls = useAnimation();
-  const [ref, inView] = useInView({ threshold: 0.3, triggerOnce: false });
+  const [ref, inView] = useInView({ threshold: 0.3, triggerOnce: true }); // <-- animate only once
 
   useEffect(() => {
     if (inView) controls.start("visible");
-    else controls.start("hidden");
   }, [controls, inView]);
 
   const steps = [
-    {
-      icon: <FaUserPlus />,
-      title: "Sign Up",
-      description: "Create your account to get started on The Perfect Buddy.",
-    },
-    {
-      icon: <FaSignInAlt />,
-      title: "Login",
-      description: "Access your account and explore available games and players.",
-    },
-    {
-      icon: <FaUserEdit />,
-      title: "Make Profile",
-      description: "Set up your profile with skills, interests, and preferences.",
-    },
-    {
-      icon: <FaCalendarPlus />,
-      title: "Host Game",
-      description: "Create a game session and invite other players to join.",
-    },
-    {
-      icon: <FaEnvelopeOpenText />,
-      title: "Requests",
-      description: "Receive or send requests to join games hosted by others.",
-    },
-    {
-      icon: <FaCheckCircle />,
-      title: "Accept / Decline",
-      description: "Review incoming requests and accept or decline them easily.",
-    },
-    {
-      icon: <FaUserEdit />,
-      title: "Prepare",
-      description: "Get ready with necessary details and communication.",
-    },
-    {
-      icon: <FaCalendarPlus />,
-      title: "Play",
-      description: "Enjoy your scheduled game session with other participants.",
-    },
-    {
-      icon: <FaTrophy />,
-      title: "Rate & Repeat",
-      description: "Rate your experience and host or join more games again!",
-    },
+    { icon: <FaUserPlus />, title: "Sign Up", description: "Create your account to get started on The Perfect Buddy." },
+    { icon: <FaSignInAlt />, title: "Login", description: "Access your account and explore available games and players." },
+    { icon: <FaUserEdit />, title: "Make Profile", description: "Set up your profile with skills, interests, and preferences." },
+    { icon: <FaCalendarPlus />, title: "Host Game", description: "Create a game session and invite other players to join." },
+    { icon: <FaEnvelopeOpenText />, title: "Requests", description: "Receive or send requests to join games hosted by others." },
+    { icon: <FaCheckCircle />, title: "Accept / Decline", description: "Review incoming requests and accept or decline them easily." },
+    { icon: <FaUserEdit />, title: "Prepare", description: "Get ready with necessary details and communication." },
+    { icon: <FaCalendarPlus />, title: "Play", description: "Enjoy your scheduled game session with other participants." },
+    { icon: <FaTrophy />, title: "Rate & Repeat", description: "Rate your experience and host or join more games again!" },
   ];
 
   const boxVariant = {
     hidden: { opacity: 0, y: 20, scale: 0.95 },
-    visible: (i) => ({
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: { delay: i * 0.15, duration: 0.4, ease: "easeOut" },
-    }),
+    visible: (i) => ({ opacity: 1, y: 0, scale: 1, transition: { delay: i * 0.15, duration: 0.4, ease: "easeOut" } }),
   };
 
   const arrowVariant = {
     hidden: { opacity: 0 },
-    visible: (i) => ({
-      opacity: 1,
-      transition: { delay: i * 0.15 + 0.1, duration: 0.3 },
-    }),
+    visible: (i) => ({ opacity: 1, transition: { delay: i * 0.15 + 0.1, duration: 0.3 } }),
   };
 
   const ArrowRight = () => (
@@ -109,8 +64,15 @@ export const HowItWorksZigZagClean = () => {
   );
 
   return (
-    <section ref={ref} className="flex flex-col items-center py-20 bg-white">
-      <h2 className="text-3xl font-bold text-center mb-10">How It Works</h2>
+    <section ref={ref} className="flex flex-col items-center bg-white">
+      <motion.h1
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="text-4xl md:text-3xl text-black font-bold mb-12 text-center drop-shadow-lg"
+      >
+        How It <span className="text-yellow-500 font-bold">Works</span>
+      </motion.h1>
 
       {/* Desktop layout */}
       <div className="hidden md:flex flex-col items-center justify-center">
@@ -131,13 +93,7 @@ export const HowItWorksZigZagClean = () => {
               </motion.div>
 
               {i < 2 && (
-                <motion.div
-                  custom={i}
-                  initial="hidden"
-                  animate={controls}
-                  variants={arrowVariant}
-                  className="flex items-center"
-                >
+                <motion.div custom={i} initial="hidden" animate={controls} variants={arrowVariant} className="flex items-center">
                   <ArrowRight />
                 </motion.div>
               )}
@@ -147,13 +103,7 @@ export const HowItWorksZigZagClean = () => {
 
         {/* Arrow down */}
         <div className="flex justify-center my-4">
-          <motion.div
-            initial="hidden"
-            animate={controls}
-            variants={arrowVariant}
-            custom={3}
-            className="translate-x-[22rem]"
-          >
+          <motion.div initial="hidden" animate={controls} variants={arrowVariant} custom={3} className="translate-x-[22rem]">
             <ArrowDown />
           </motion.div>
         </div>
@@ -178,13 +128,7 @@ export const HowItWorksZigZagClean = () => {
                 </motion.div>
 
                 {i < 2 && (
-                  <motion.div
-                    custom={i + 3}
-                    initial="hidden"
-                    animate={controls}
-                    variants={arrowVariant}
-                    className="flex items-center"
-                  >
+                  <motion.div custom={i + 3} initial="hidden" animate={controls} variants={arrowVariant} className="flex items-center">
                     <ArrowLeft />
                   </motion.div>
                 )}
@@ -194,13 +138,7 @@ export const HowItWorksZigZagClean = () => {
 
         {/* Arrow down */}
         <div className="flex justify-center my-4">
-          <motion.div
-            initial="hidden"
-            animate={controls}
-            variants={arrowVariant}
-            custom={6}
-            className="-translate-x-[22rem]"
-          >
+          <motion.div initial="hidden" animate={controls} variants={arrowVariant} custom={6} className="-translate-x-[22rem]">
             <ArrowDown />
           </motion.div>
         </div>
@@ -222,13 +160,7 @@ export const HowItWorksZigZagClean = () => {
               </motion.div>
 
               {i < 2 && (
-                <motion.div
-                  custom={i + 6}
-                  initial="hidden"
-                  animate={controls}
-                  variants={arrowVariant}
-                  className="flex items-center"
-                >
+                <motion.div custom={i + 6} initial="hidden" animate={controls} variants={arrowVariant} className="flex items-center">
                   <ArrowRight />
                 </motion.div>
               )}
@@ -254,13 +186,7 @@ export const HowItWorksZigZagClean = () => {
             </motion.div>
 
             {i < steps.length - 1 && (
-              <motion.div
-                custom={i}
-                initial="hidden"
-                animate={controls}
-                variants={arrowVariant}
-                className="flex justify-center my-2"
-              >
+              <motion.div custom={i} initial="hidden" animate={controls} variants={arrowVariant} className="flex justify-center my-2">
                 <ArrowDown />
               </motion.div>
             )}

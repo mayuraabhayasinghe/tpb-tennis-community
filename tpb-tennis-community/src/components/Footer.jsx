@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 
 export const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-gray-200 pt-10">
+    <footer className="bg-gradient-to-t from-gray-900 via-gray-800 to-gray-700 text-gray-200 pt-10">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         {/* Top Section */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
