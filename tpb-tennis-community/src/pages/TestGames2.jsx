@@ -162,7 +162,7 @@ export default function TestGames2() {
             available_vacancies,
             required_skill_level,
             status,
-            profiles:games_host_user_id_fkey1 (
+            profiles:host_user_id (
               first_name,
               last_name
             )
