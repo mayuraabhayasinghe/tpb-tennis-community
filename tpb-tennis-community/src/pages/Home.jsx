@@ -39,7 +39,7 @@ export const Home = () => {
       <Navbar />
       <div className="text-center mt-15">
         <div
-          className="h-[600px] flex flex-col items-center justify-center bg-center bg-cover relative"
+          className="h-[600px] flex flex-col items-center justify-center bg-center bg-cover relative px-5"
           style={{ backgroundImage: `url(${heroBg})` }}
         >
           <div className="absolute inset-0 bg-black/40"></div>
@@ -172,7 +172,7 @@ export const Home = () => {
         <HowItWorksZigZagClean/>
 
         <div
-          className="h-[300px] flex flex-col items-center justify-center mt-10 relative bg-center bg-cover"
+          className="h-[300px] flex flex-col items-center justify-center mt-10 relative bg-center bg-cover px-5"
           style={{ backgroundImage: `url(${bottom})` }}
         >
           {/* Semi-transparent overlay */}
