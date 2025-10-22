@@ -14,8 +14,11 @@ import Profile from "./pages/Profile.jsx";
 import ProfileById from "./pages/ProfileById.jsx";
 import HostAGame from "./pages/HostAGame.jsx";
 import TestGames2 from "./pages/TestGames2.jsx";
-import OnBoardingRoutes from "../routes/OnBoardingRoutes.jsx";
-import ProtectedRoutes from "../routes/ProtectedRoutes.jsx";
+import OnBoardingRoutes from "../routes/onBoardingRoutes.jsx";
+import ProtectedRoutes from "../routes/protectedRoutes.jsx";
+import TestGames3 from "./pages/TestGames3.jsx";
+import { TestRequests } from "./pages/TestRequests.jsx";
+import TestProfileById from "./pages/TestProfileById.jsx";
 
 function App() {
   return (
@@ -42,7 +45,7 @@ function App() {
             path="/requests"
             element={
               <ProtectedRoutes>
-                <Requests />
+                <TestRequests />
               </ProtectedRoutes>
             }
           />
@@ -96,7 +99,7 @@ function App() {
             path="/games"
             element={
               <ProtectedRoutes>
-                <TestGames2 />
+                <TestGames3 />
               </ProtectedRoutes>
             }
           />
