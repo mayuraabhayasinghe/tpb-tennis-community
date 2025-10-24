@@ -26,20 +26,19 @@ export default function TestGames2() {
   const [requestLoading, setRequestLoading] = useState(false);
 
   //  Add these two helper functions after your useState declarations
-const upsertGame = (updatedGame) => {
-  setGames((prev) => {
-    const idx = prev.findIndex((g) => g.id === updatedGame.id);
-    if (idx === -1) return [updatedGame, ...prev];
-    const next = [...prev];
-    next[idx] = { ...next[idx], ...updatedGame };
-    return next;
-  });
-};
+  const upsertGame = (updatedGame) => {
+    setGames((prev) => {
+      const idx = prev.findIndex((g) => g.id === updatedGame.id);
+      if (idx === -1) return [updatedGame, ...prev];
+      const next = [...prev];
+      next[idx] = { ...next[idx], ...updatedGame };
+      return next;
+    });
+  };
 
-const removeGame = (gameId) => {
-  setGames((prev) => prev.filter((g) => g.id !== gameId));
-};
-
+  const removeGame = (gameId) => {
+    setGames((prev) => prev.filter((g) => g.id !== gameId));
+  };
 
   const now = new Date();
 
@@ -47,7 +46,9 @@ const removeGame = (gameId) => {
   const filteredGames = games.filter((game) => {
     const query = search.toLowerCase();
     const hostFullName = game.profiles
-      ? `${game.profiles.first_name ?? ""} ${game.profiles.last_name ?? ""}`.trim()
+      ? `${game.profiles.first_name ?? ""} ${
+          game.profiles.last_name ?? ""
+        }`.trim()
       : "";
     const gameEndDateTime = new Date(`${game.game_date}T${game.game_end_time}`);
 
@@ -117,9 +118,9 @@ const removeGame = (gameId) => {
     setLoading(true);
     try {
       // Fetch games
-      const { data: gamesData, error: gamesError } = await supabase
-        .from("games")
-        .select(`
+      const { data: gamesData, error: gamesError } = await supabase.from(
+        "games"
+      ).select(`
           id,
           reference_number,
           host_user_id,
@@ -168,7 +169,9 @@ const removeGame = (gameId) => {
 
     const now = new Date();
     const expiredIds = allGames
-      .filter((game) => new Date(`${game.game_date}T${game.game_end_time}`) < now)
+      .filter(
+        (game) => new Date(`${game.game_date}T${game.game_end_time}`) < now
+      )
       .map((game) => game.id);
 
     if (expiredIds.length > 0) {
@@ -177,7 +180,8 @@ const removeGame = (gameId) => {
         .delete()
         .in("id", expiredIds);
 
-      if (deleteError) console.error("Error deleting expired games:", deleteError);
+      if (deleteError)
+        console.error("Error deleting expired games:", deleteError);
       else fetchGamesAndRequests();
     }
   };
@@ -189,84 +193,85 @@ const removeGame = (gameId) => {
   }, [userId]);
 
   //  Unified realtime subscription for both games and game_requests
-useEffect(() => {
-  const channel = supabase
-    .channel("realtime_games_and_requests")
+  useEffect(() => {
+    const channel = supabase
+      .channel("realtime_games_and_requests")
 
-    // 🔹 Listen for games changes (insert/update/delete)
-    .on(
-      "postgres_changes",
-      { event: "*", schema: "public", table: "games" },
-      (payload) => {
-        const evt = payload.eventType;
-        if (evt === "DELETE") {
-          removeGame(payload.old?.id);
-        } else if (evt === "INSERT" || evt === "UPDATE") {
-          const updated = payload.new;
-          if (!updated) return;
+      // 🔹 Listen for games changes (insert/update/delete)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "games" },
+        (payload) => {
+          const evt = payload.eventType;
+          if (evt === "DELETE") {
+            removeGame(payload.old?.id);
+          } else if (evt === "INSERT" || evt === "UPDATE") {
+            const updated = payload.new;
+            if (!updated) return;
 
-          // Merge with existing profile data if missing
-          setGames((prev) => {
-            const idx = prev.findIndex((g) => g.id === updated.id);
-            if (idx === -1) return [updated, ...prev];
-            const next = [...prev];
-            next[idx] = {
-              ...next[idx],
-              ...updated,
-              profiles: updated.profiles ?? next[idx].profiles,
-            };
-            return next;
-          });
+            // Merge with existing profile data if missing
+            setGames((prev) => {
+              const idx = prev.findIndex((g) => g.id === updated.id);
+              if (idx === -1) return [updated, ...prev];
+              const next = [...prev];
+              next[idx] = {
+                ...next[idx],
+                ...updated,
+                profiles: updated.profiles ?? next[idx].profiles,
+              };
+              return next;
+            });
+          }
         }
-      }
-    )
+      )
 
-    //  Listen for game_requests changes (insert/delete/update)
-    .on(
-      "postgres_changes",
-      { event: "*", schema: "public", table: "game_requests" },
-      (payload) => {
-        const evt = payload.eventType;
-        if (!payload.new && !payload.old) return;
+      //  Listen for game_requests changes (insert/delete/update)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "game_requests" },
+        (payload) => {
+          const evt = payload.eventType;
+          if (!payload.new && !payload.old) return;
 
-        if (evt === "INSERT" && payload.new?.requester_id === userId) {
-          setUserRequests((prev) => [
-            ...prev,
-            { id: payload.new.id, game_id: payload.new.game_id },
-          ]);
-        } else if (evt === "DELETE" && payload.old?.requester_id === userId) {
-          setUserRequests((prev) =>
-            prev.filter((r) => r.id !== payload.old.id)
-          );
-        } else if (evt === "UPDATE" && payload.new?.requester_id === userId) {
-          // Keep updated version (e.g., status change)
-          setUserRequests((prev) => {
-            const exists = prev.find((r) => r.id === payload.new.id);
-            if (exists) {
-              return prev.map((r) =>
-                r.id === payload.new.id ? { ...r, ...payload.new } : r
-              );
-            }
-            return [...prev, { id: payload.new.id, game_id: payload.new.game_id }];
-          });
+          if (evt === "INSERT" && payload.new?.requester_id === userId) {
+            setUserRequests((prev) => [
+              ...prev,
+              { id: payload.new.id, game_id: payload.new.game_id },
+            ]);
+          } else if (evt === "DELETE" && payload.old?.requester_id === userId) {
+            setUserRequests((prev) =>
+              prev.filter((r) => r.id !== payload.old.id)
+            );
+          } else if (evt === "UPDATE" && payload.new?.requester_id === userId) {
+            // Keep updated version (e.g., status change)
+            setUserRequests((prev) => {
+              const exists = prev.find((r) => r.id === payload.new.id);
+              if (exists) {
+                return prev.map((r) =>
+                  r.id === payload.new.id ? { ...r, ...payload.new } : r
+                );
+              }
+              return [
+                ...prev,
+                { id: payload.new.id, game_id: payload.new.game_id },
+              ];
+            });
+          }
         }
-      }
-    )
+      )
 
-    .subscribe();
+      .subscribe();
 
-  return () => {
-    supabase.removeChannel(channel);
-  };
-}, [userId]);
-
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
 
   //  Helper to check if user requested
   const hasRequested = (gameId) => {
     return userRequests.some((req) => req.game_id === gameId);
   };
 
-  
   return (
     <>
       <Navbar />
@@ -312,7 +317,8 @@ useEffect(() => {
                     let borderColor = "";
                     let statusLabel = "";
 
-                    if (game.status === "open") borderColor = "border-[#93E9B3]";
+                    if (game.status === "open")
+                      borderColor = "border-[#93E9B3]";
                     else if (game.status === "filled") {
                       borderColor = "border-yellow-400";
                       statusLabel = "FILLED";
@@ -352,11 +358,14 @@ useEffect(() => {
 
                           <p className="text-gray-500 text-sm flex items-center gap-2">
                             <BsCalendar2Date />{" "}
-                            {new Date(game.game_date).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })}
+                            {new Date(game.game_date).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              }
+                            )}
                           </p>
 
                           <p className="text-gray-500 text-sm flex items-center gap-2">
@@ -381,7 +390,9 @@ useEffect(() => {
                           <p className="text-gray-500 text-sm flex items-center gap-2">
                             <CiLocationOn /> Hosted by{" "}
                             {game.profiles
-                              ? `${game.profiles.first_name ?? ""} ${game.profiles.last_name ?? ""}`.trim() || "Unknown"
+                              ? `${game.profiles.first_name ?? ""} ${
+                                  game.profiles.last_name ?? ""
+                                }`.trim() || "Unknown"
                               : "Unknown"}
                           </p>
 
