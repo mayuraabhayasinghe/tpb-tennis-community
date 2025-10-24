@@ -492,7 +492,7 @@ const SignUp = () => {
                 </button>
               </form>
 
-              {/* <div className="relative my-6">
+              <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t border-gray-200 dark:border-gray-800" />
                 </div>
@@ -513,7 +513,7 @@ const SignUp = () => {
                   <GoogleIcon />
                   <span className="ml-2">Google</span>
                 </button>
-              </div> */}
+              </div>
 
               {}
               <div className="text-center mt-6">

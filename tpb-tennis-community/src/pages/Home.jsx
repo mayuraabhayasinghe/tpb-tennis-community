@@ -18,19 +18,19 @@ import { Button } from "../components/ui/button";
 
 export const Home = () => {
   const { session, signOut } = UserAuth();
-  
-    const [loading, setLoading] = useState(false);
-  
-    const handleSignOut = async () => {
-      try {
-        setLoading(true);
-        await signOut();
-      } catch (error) {
-        console.error("Unexpected error occured at log out: ", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+
+  const [loading, setLoading] = useState(false);
+
+  const handleSignOut = async () => {
+    try {
+      setLoading(true);
+      await signOut();
+    } catch (error) {
+      console.error("Unexpected error occured at log out: ", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const navigate = useNavigate();
 
@@ -51,125 +51,130 @@ export const Home = () => {
               Connect with tennis players in your area, join games, or host your
               own matches.
             </p>
-       <div className="flex justify-center items-center mt-10">
-        {/* Conditional Buttons */}
-          <div className="flex flex-row gap-3 z-10">
-            {session ? (
-              <>
-                {/* When logged in */}
-                <button
-                  className="bg-white px-3 py-1.5 w-[100px] text-green-600 mt-5 rounded-3xl cursor-pointer font-bold text-sm transition duration-300 hover:bg-blue-100/80"
-                  onClick={() => navigate("/profile")}
-                >
-                  Profile
-                </button>
-                <button
-                  className="border border-white text-white font-semibold px-3 py-1.5 w-[100px] mt-5 rounded-3xl cursor-pointer transition duration-300 hover:bg-white/20 hover:text-white"
-                  onClick={handleSignOut}
-                  disabled={loading}
-                >
-                  {loading ? "Logging out..." : "Logout"}
-                </button>
-              </>
-            ) : (
-              <>
-                {/* When NOT logged in */}
-                <button
-                  className="bg-white px-3 py-1.5 w-[100px] text-green-600 mt-5 rounded-3xl cursor-pointer font-bold text-sm transition duration-300 hover:bg-blue-100/80"
-                  onClick={() => navigate("/sign-up")}
-                >
-                  Join Now
-                </button>
-                <button
-                  className="border border-white text-white font-semibold px-3 py-1.5 w-[100px] mt-5 rounded-3xl cursor-pointer transition duration-300 hover:bg-white/20 hover:text-white"
-                  onClick={() => navigate("/login")}
-                >
-                  Sign In
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-       </div> 
-
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 justify-items-center mt-12 px-17">
-          <div
-            className="relative w-90 h-100 rounded-2xl overflow-hidden shadow-lg group  cursor-pointer"
-            onClick={() => {
-              navigate("/games");
-            }}
-          >
-            {/* Background image */}
-            <img
-              src={Games}
-              alt="Game Requests"
-              className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110"
-            />
-
-            {/* Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
-
-            {/* Text content */}
-            <div className="absolute bottom-0 p-6 text-white z-10">
-              <h2 className="text-2xl font-bold">Games</h2>
-              <p className="mt-2 text-sm">
-                Browse available games in your area or create your own and
-                invite others to join.
-              </p>
+            <div className="flex justify-center items-center mt-10">
+              {/* Conditional Buttons */}
+              <div className="flex flex-row gap-3 z-10">
+                {session ? (
+                  <>
+                    {/* When logged in */}
+                    <button
+                      className="bg-white px-3 py-1.5 w-[100px] text-green-600 mt-5 rounded-3xl cursor-pointer font-bold text-sm transition duration-300 hover:bg-blue-100/80"
+                      onClick={() => navigate("/profile")}
+                    >
+                      Profile
+                    </button>
+                    <button
+                      className="border border-white text-white font-semibold px-3 py-1.5 w-[100px] mt-5 rounded-3xl cursor-pointer transition duration-300 hover:bg-white/20 hover:text-white"
+                      onClick={handleSignOut}
+                      disabled={loading}
+                    >
+                      {loading ? "Logging out..." : "Logout"}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {/* When NOT logged in */}
+                    <button
+                      className="bg-white px-3 py-1.5 w-[100px] text-green-600 mt-5 rounded-3xl cursor-pointer font-bold text-sm transition duration-300 hover:bg-blue-100/80"
+                      onClick={() => navigate("/sign-up")}
+                    >
+                      Join Now
+                    </button>
+                    <button
+                      className="border border-white text-white font-semibold px-3 py-1.5 w-[100px] mt-5 rounded-3xl cursor-pointer transition duration-300 hover:bg-white/20 hover:text-white"
+                      onClick={() => navigate("/login")}
+                    >
+                      Sign In
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
+        </div>
 
-          <div
-            className="relative w-90 h-100 rounded-2xl overflow-hidden shadow-lg group cursor-pointer transform transition duration-300 hover:shadow-2xl hover:-translate-y-1"
-            onClick={() => navigate("/requests")}
-          >
-            <img
-              src={requests}
-              alt="Game Requests"
-              className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110"
-            />
+        {/* Menu cards after the hero section */}
+        <div className="flex justify-center px-4 sm:px-6 md:px-8">
+          <div className="w-full max-w-7xl grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 mt-8 md:mt-12">
+            <div
+              className="relative w-full aspect-[4/5] rounded-xl sm:rounded-2xl overflow-hidden shadow-lg group cursor-pointer hover:shadow-xl transition-all duration-300"
+              onClick={() => {
+                navigate("/games");
+              }}
+            >
+              {/* Background image */}
+              <img
+                src={Games}
+                alt="Game Requests"
+                className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110"
+              />
 
-            {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+              {/* Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
 
-            {/* Text Content */}
-            <div className="absolute bottom-0 p-6 text-white z-10">
-              <h2 className="text-xl font-bold">Game Requests</h2>
-              <p className="mt-2 text-sm">
-                Send or respond to game requests from other players and find the
-                perfect partner that matches your availability.
-              </p>
+              {/* Text content */}
+              <div className="absolute left-0 right-0 top-[65%] sm:top-[45%] xl:top-[65%] p-4 sm:p-6 text-white z-10">
+                <h2 className="text-xl sm:text-2xl font-bold mb-2">Games</h2>
+                <p className="text-sm xl:text-base">
+                  Browse available games in your area or create your own and
+                  invite others to join.
+                </p>
+              </div>
             </div>
-          </div>
 
-          <div
-            className="relative w-90 h-100 rounded-2xl overflow-hidden shadow-lg group cursor-pointer"
-            onClick={() => {
-              navigate("/rankings");
-            }}
-          >
-            <img
-              src={Ranking}
-              alt="Game Requests"
-              className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110"
-            />
+            <div
+              className="relative w-full aspect-[4/5] rounded-xl sm:rounded-2xl overflow-hidden shadow-lg group cursor-pointer hover:shadow-xl transition-all duration-300"
+              onClick={() => navigate("/requests")}
+            >
+              <img
+                src={requests}
+                alt="Game Requests"
+                className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110"
+              />
 
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+              {/* Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
 
-            <div className="absolute bottom-0 p-6 text-white z-10">
-              <h2 className="text-2xl font-bold">Ranking</h2>
-              <p className="mt-2 text-sm">
-                Enjoy your tennis match and rate your partners to help build a
-                trusted community.
-              </p>
+              {/* Text Content */}
+              <div className="absolute left-0 right-0 top-[65%] sm:top-[45%] xl:top-[65%] p-4 sm:p-6 text-white z-10">
+                <h2 className="text-xl sm:text-2xl font-bold mb-2">
+                  Game Requests
+                </h2>
+                <p className="text-sm xl:text-base">
+                  Send or respond to game requests from other players and find
+                  the perfect partner that matches your availability.
+                </p>
+              </div>
+            </div>
+
+            <div
+              className="relative w-full aspect-[4/5] rounded-xl sm:rounded-2xl overflow-hidden shadow-lg group cursor-pointer hover:shadow-xl transition-all duration-300"
+              onClick={() => {
+                navigate("/rankings");
+              }}
+            >
+              <img
+                src={Ranking}
+                alt="Game Requests"
+                className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110"
+              />
+
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+
+              <div className="absolute left-0 right-0 top-[65%] sm:top-[45%] xl:top-[65%] p-4 sm:p-6 text-white z-10">
+                <h2 className="text-xl sm:text-2xl font-bold mb-2">Ranking</h2>
+                <p className="text-sm xl:text-base">
+                  Enjoy your tennis match and rate your partners to help build a
+                  trusted community.
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
         <WhyChooseTPB />
 
-        <HowItWorksZigZagClean/>
+        <HowItWorksZigZagClean />
 
         <div
           className="h-[300px] flex flex-col items-center justify-center mt-10 relative bg-center bg-cover px-5"
@@ -183,21 +188,25 @@ export const Home = () => {
               Ready to Find Your Perfect Tennis Buddy?
             </h1>
             <p className="text-white text-lg">
-              Join our community today and never miss a chance to play tennis with the
+              Join our community today and never miss a chance to play tennis
+              with the
               <br />
               perfect partner.
             </p>
-            {session ? ("") :(<button
-              className="border border-white text-white font-semibold px-4 py-2 mt-5 rounded-3xl cursor-pointer transition duration-300 hover:bg-white/20 hover:text-white"
-              onClick={() => {
-                navigate("/sign-up");
-              }}
-            >
-              Sign Up Now
-            </button>)}
+            {session ? (
+              ""
+            ) : (
+              <button
+                className="border border-white text-white font-semibold px-4 py-2 mt-5 rounded-3xl cursor-pointer transition duration-300 hover:bg-white/20 hover:text-white"
+                onClick={() => {
+                  navigate("/sign-up");
+                }}
+              >
+                Sign Up Now
+              </button>
+            )}
           </div>
         </div>
-
       </div>
       <Footer />
     </div>
