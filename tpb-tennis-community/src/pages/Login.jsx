@@ -105,7 +105,7 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   const navigate = useNavigate();
-  const { signIn, loading: contextLoading } = UserAuth();
+  const { signIn, signInWithGoogle, loading: contextLoading } = UserAuth();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -133,29 +133,18 @@ const Login = () => {
   };
 
   // Function to handle Google login
-  // const handleGoogleLogin = async () => {
-  //   try {
-  //     setErrorMessage("");
-  //     console.log("Attempting Google login...");
-
-  //     // For OAuth, we need to set a redirectURL that will check profile completion on return
-  //     const { data, error } = await supabase.auth.signInWithOAuth({
-  //       provider: "google",
-  //       options: {
-  //         // Redirect back to login to handle profile check
-  //         redirectTo: `${window.location.origin}/oauth-redirect`,
-  //       },
-  //     });
-
-  //     if (error) {
-  //       console.error("Google login error:", error.message);
-  //       setErrorMessage(error.message);
-  //     }
-  //   } catch (err) {
-  //     console.error("Unexpected error during Google login:", err);
-  //     setErrorMessage("An unexpected error occurred with Google sign in.");
-  //   }
-  // };
+  const handleGoogleLogin = async () => {
+    setErrorMessage("");
+    setLoading(true);
+    try {
+      await signInWithGoogle(); // Let AuthContext handle the redirect
+    } catch (error) {
+      console.error("Unexpected error during Google login:", error);
+      setErrorMessage("An unexpected error occurred with Google sign in.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Form validation
   useEffect(() => {
@@ -272,7 +261,8 @@ const Login = () => {
               <div className="w-full">
                 <button
                   type="button"
-                  // onClick={handleGoogleLogin}
+                  onClick={handleGoogleLogin}
+                  disabled={loading}
                   className="w-full inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white dark:ring-offset-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-200 dark:border-gray-800 bg-white dark:bg-black hover:bg-gray-50 dark:hover:bg-gray-950 hover:text-gray-900 dark:hover:text-gray-50 h-10 px-4 py-2"
                 >
                   <GoogleIcon />
