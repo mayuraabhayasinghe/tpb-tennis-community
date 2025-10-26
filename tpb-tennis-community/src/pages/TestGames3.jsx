@@ -308,7 +308,7 @@ export default function TestGames2() {
             {/* Game Cards */}
             <div>
               {loading ? (
-                <div className="w-full h-full flex justify-center items-center">
+                <div className="w-full flex pt-20 md:pt-45 justify-center items-center">
                   <AnimatedLogo type="pulse" size="default" />
                 </div>
               ) : (
