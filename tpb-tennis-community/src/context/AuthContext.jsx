@@ -50,6 +50,9 @@ export const AuthProvider = ({ children }) => {
   const signInWithGoogle = async () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
+      options: {
+        redirectTo: import.meta.env.VITE_SITE_URL,
+      },
     });
 
     if (error) {
@@ -121,12 +124,20 @@ export const AuthProvider = ({ children }) => {
     return () => {
       authListener?.subscription.unsubscribe();
     };
-
-    
   }, []);
 
   return (
-    <authContext.Provider value={{ session, profile, signUp, signIn, signOut, loading, signInWithGoogle }}>
+    <authContext.Provider
+      value={{
+        session,
+        profile,
+        signUp,
+        signIn,
+        signOut,
+        loading,
+        signInWithGoogle,
+      }}
+    >
       {children}
     </authContext.Provider>
   );
